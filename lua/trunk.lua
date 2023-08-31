@@ -33,11 +33,25 @@ local function open_window()
 end
 
 local function run()
+  -- vim.lsp.handlers["textDocument/definition"] = my_custom_default_definition
+  
   vim.lsp.start({
     name = 'neovim-trunk',
     cmd = {'trunk', "lsp-proxy"},
     root_dir = "~/neovim-trunk",
+    init_options = {
+      version = "3.4.6",
+    }
+    -- handlers = {
+    -- ["textDocument/definition"] = my_custom_server_definition
+  -- },
   })
+  -- vim.fs.dirname(vim.fs.find({'pyproject.toml', 'setup.py'}, { upward = true })[1])
+
+  -- :lua =vim.lsp.start({name="trunk", cmd={"trunk", "lsp-proxy", "--log-file=/home/tyler/re
+-- pos/neovim-trunk/lsp.log"}, root_dir="/home/tyler/repos/neovim-tr
+-- unk", init_options = { version = "3.4.6"}})
+
   open_window()
 end
 

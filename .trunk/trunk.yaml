@@ -6,6 +6,10 @@ plugins:
     - id: trunk
       ref: v1.2.2
       uri: https://github.com/trunk-io/plugins
+
+
+
+# commmmmmmmment 
 runtimes:
   enabled:
     - node@18.12.1
@@ -14,7 +18,7 @@ lint:
   enabled:
     - git-diff-check
     - markdownlint@0.35.0
-    - prettier@3.0.3
+    # - prettier@3.0.3
     - trufflehog@3.54.1
 actions:
   disabled:
