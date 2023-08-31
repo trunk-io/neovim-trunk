@@ -1,25 +1,31 @@
 version: 0.1
 cli:
   version: 1.14.2
+  options:
+    - commands: [ALL]
+      args: --monitor=false
 plugins:
   sources:
     - id: trunk
       ref: v1.2.2
       uri: https://github.com/trunk-io/plugins
-
-
-
-# commmmmmmmment 
 runtimes:
   enabled:
     - node@18.12.1
     - python@3.10.8
 lint:
   enabled:
+    - ruff@0.0.286
+    - black@23.7.0
+    - mypy@1.5.1
+    - pylint@2.17.5
     - git-diff-check
     - markdownlint@0.35.0
     # - prettier@3.0.3
     - trufflehog@3.54.1
+  ignore:
+    - linters: [ALL]
+      paths: [lsp*]
 actions:
   disabled:
     - trunk-announce
