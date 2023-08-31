@@ -1,5 +1,3 @@
-local test = 1
-
 local api = vim.api
 local buf, win
 
@@ -13,7 +11,7 @@ local function open_window()
   local height = api.nvim_get_option("lines")
 
   -- calculate our floating window size
-  local win_height = math.ceil(height * 0.8 - 4)
+  local win_height = math.ceil(height * 1 - 4)
   local win_width = math.ceil(width * 0.8)
 
   -- and its starting position
@@ -34,6 +32,15 @@ local function open_window()
   win = api.nvim_open_win(buf, true, opts)
 end
 
+local function run()
+  vim.lsp.start({
+    name = 'neovim-trunk',
+    cmd = {'trunk', "lsp-proxy"},
+    root_dir = "~/neovim-trunk",
+  })
+  open_window()
+end
+
 return {
-  open_window = open_window
+  run = run
 }
