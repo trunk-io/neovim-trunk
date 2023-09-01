@@ -45,8 +45,8 @@ local function printNotifications()
 	local finders = require("telescope.finders")
 	local actions = require("telescope.actions")
 	local action_state = require("telescope.actions.state")
-
 	for _, v in pairs(notifications) do
+		-- This output is replaced with the picker
 		print(string.format("%s:\n%s", v.title, v.message))
 
 		if #v.commands > 0 then
@@ -77,8 +77,6 @@ local function printNotifications()
 				:find()
 		end
 	end
-
-	-- picker(notifications)
 end
 
 local function connect()
@@ -194,6 +192,9 @@ end
 local function printStatus()
 	-- TODO: Print errors
 	printFailures()
+end
+
+local function actions()
 	printNotifications()
 end
 
@@ -208,12 +209,11 @@ local function checkQuery()
 	end
 end
 
--- TODO: Make a picker or a hover for action notifications
-
 return {
 	start = start,
 	findConfig = findConfig,
 	setup = setup,
 	printStatus = printStatus,
+	actions = actions,
 	checkQuery = checkQuery,
 }

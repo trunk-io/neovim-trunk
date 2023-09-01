@@ -20,6 +20,9 @@ command! TrunkConfig :call OpenConfig()
 " command to render any errors
 command! TrunkStatus lua require'trunk'.printStatus()
 
+" command to render actions and pickers
+command! TrunkActions lua require'trunk'.actions()
+
 " command to list all applicable linters for a file
 command! TrunkQuery lua require'trunk'.checkQuery()
 
