@@ -5,6 +5,7 @@ Screenshots
 ## Installation
 
 Minimum nvim version: `v0.9.1`
+Telescope installed: `v0.1.2`
 
 ### Remote installation
 
