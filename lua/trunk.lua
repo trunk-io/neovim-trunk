@@ -4,8 +4,9 @@ local dlog = require("dlog")
 local logger = dlog("trunk_logger")
 -- run :DebugLogEnable * to enable logs
 
-trunkPath = "trunk"
-appendArgs = {}
+local trunkPath = "trunk"
+local appendArgs = {}
+local formatOnSave = true
 
 logger("starting")
 
@@ -71,10 +72,12 @@ local function start()
 	autocmd("BufWritePre", {
 		pattern = "<buffer>",
 		callback = function()
-			logger("fmt on save callback")
-			local cursor = vim.api.nvim_win_get_cursor(0)
-			vim.cmd([[:% !]] .. trunkPath .. [[ format-stdin %]])
-			vim.api.nvim_win_set_cursor(0, cursor)
+			if formatOnSave then
+				logger("fmt on save callback")
+				local cursor = vim.api.nvim_win_get_cursor(0)
+				vim.cmd([[:% !]] .. trunkPath .. [[ format-stdin %]])
+				vim.api.nvim_win_set_cursor(0, cursor)
+			end
 		end,
 	})
 end
@@ -97,6 +100,9 @@ local function setup(opts)
 	end
 	if not isempty(opts.lspArgs) then
 		appendArgs = opts.lspArgs
+	end
+	if not isempty(opts.lspArgs) then
+		formatOnSave = opts.lspArgs
 	end
 end
 

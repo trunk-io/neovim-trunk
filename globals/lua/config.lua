@@ -35,6 +35,7 @@ require("lazy").setup({
 		config = {
 			trunkPath = "/home/tyler/repos/trunk/bazel-bin/trunk/cli/cli",
 			lspArgs = { "--log-file=/home/tyler/repos/neovim-trunk/lsp_new.log" },
+			formatOnSave = true,
 		},
 		main = "trunk",
 	},
