@@ -1,6 +1,7 @@
 ---@diagnostic disable: need-check-nil
 
 local dlog = require("dlog")
+
 local logger = dlog("trunk_logger")
 -- run :DebugLogEnable * to enable logs
 
@@ -39,9 +40,45 @@ local function printFailures()
 end
 
 local function printNotifications()
+	-- TODO: Don't unconditionally depend on telescope
+	local picker = require("telescope.pickers")
+	local finders = require("telescope.finders")
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
 	for _, v in pairs(notifications) do
 		print(string.format("%s:\n%s", v.title, v.message))
+
+		if #v.commands > 0 then
+			local commands = {}
+			for _, command in pairs(v.commands) do
+				table.insert(commands, command.run)
+			end
+
+			local attach_callback = function(prompt_bufnr, _)
+				actions.select_default:replace(function()
+					actions.close(prompt_bufnr)
+					local selection = action_state.get_selected_entry()
+					vim.cmd(":!" .. selection[1] .. [[ | sed -e 's/\x1b\[[0-9;]*m//g']])
+				end)
+				return true
+			end
+
+			picker
+				.new({}, {
+					prompt_title = v.title,
+					results_title = "Commands",
+					finder = finders.new_table({
+						results = commands,
+					}),
+					cwd = findWorkspace(),
+					attach_mappings = attach_callback,
+				})
+				:find()
+		end
 	end
+
+	-- picker(notifications)
 end
 
 local function connect()
@@ -108,6 +145,7 @@ local function start()
 		callback = function()
 			if formatOnSave then
 				logger("fmt on save callback")
+				-- TODO: TYLER VERIFY PATH IS NOT NIL
 				local cursor = vim.api.nvim_win_get_cursor(0)
 				vim.cmd(":% !" .. trunkPath .. " format-stdin %:p")
 				vim.api.nvim_win_set_cursor(0, cursor)

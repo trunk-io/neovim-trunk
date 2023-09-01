@@ -8,6 +8,9 @@ function! OpenConfig()
   execute 'edit '.fnameescape(configFile)
 endfunction
 
+" :lua require'telescope.builtin'.planets{}
+
+
 " command to run our plugin
 lua require'trunk'.start()
 

@@ -1,6 +1,9 @@
 version: 0.1
 cli:
   version: 1.14.2
+  options:
+    - commands: [upgrade]
+      args: -y --no-progress
 plugins:
   sources:
     - id: trunk
