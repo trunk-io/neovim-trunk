@@ -39,6 +39,15 @@ local function connect()
   })
 end
 
+local function split(str, sep)
+  local result = {}
+  local regex = ("([^%s]+)"):format(sep)
+  for each in str:gmatch(regex) do
+     table.insert(result, each)
+  end
+  return result
+end
+
 local function start()
   debug_print("setting up autocmds")
   local autocmd = vim.api.nvim_create_autocmd
@@ -50,27 +59,16 @@ local function start()
         vim.lsp.buf_attach_client(0, client)
       end
   })
-  --[[
+  
   autocmd("BufWritePre", {
     pattern = "<buffer>",
     callback = function()
       debug_print("fmt on save callback")
-      local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
-      -- should feed content into trunk fmt stdin here
-    end
-  })
-  ]]
-
-  autocmd("BufWritePost", {
-    pattern = "<buffer>",
-    callback = function()
-      debug_print("fmt on save callback evil")
-      local output = vim.fn.system{"trunk","fmt"}
-      debug_print(output)
-      -- reload file to the trunk formatted
+      local cursor = vim.api.nvim_win_get_cursor(0)
       vim.cmd([[
-        :e!
+        :% !trunk format-stdin %
       ]])
+      vim.api.nvim_win_set_cursor(0, cursor);
     end
   })
 end
