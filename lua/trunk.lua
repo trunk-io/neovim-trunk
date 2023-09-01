@@ -26,17 +26,63 @@ local function findWorkspace()
 end
 
 local function printFailures()
+	-- empty list of a named failure signifies failures have been resolved/cleared
+	-- TODO: Add this clearing logic to the handler
+	local failure_elements = {}
+	local detail_array = {}
+	local index = 1
 	for name, fails in pairs(failures) do
-		-- empty list signifies failures have been resolved/cleared
-		-- TODO: Add this clearing logic to the handler
 		if #fails > 0 then
-			local messages = {}
-			for _, f in pairs(fails) do
-				table.insert(messages, f.message)
-			end
-			print(string.format("Failure %s: [%s]", name, table.concat(messages, ", ")))
+			-- TODO: This incorrectly only shows the first failure for a given linter
+			-- TODO: Don't depend on telescope existing
+			print("added " .. name .. " " .. string.format("%d Failure %s: %s", index, name, fails[1].message))
+			-- table.insert(failure_elements, "bar")
+			-- failure_elements["foo"] = "bar"
+			-- failure_elements[name] = string.format("Failure %s: %s", name, fails[1].message)
+			table.insert(failure_elements, string.format("%d Failure %s: %s", index, name, fails[1].message))
+			table.insert(detail_array, fails[1].detailPath)
+
+			-- print(string.format("Failure %s: [%s]", name, table.concat(messages, ", ")))
+			index = index + 1
 		end
 	end
+
+	print(table.concat(detail_array, "\n"))
+
+	local picker = require("telescope.pickers")
+	local finders = require("telescope.finders")
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	local attach_callback = function(prompt_bufnr, _)
+		actions.select_default:replace(function()
+			actions.close(prompt_bufnr)
+			local selection = action_state.get_selected_entry()
+			print(selection[1])
+			local words = {}
+			for word in selection[1]:gmatch("%w+") do
+				table.insert(words, word)
+			end
+
+			local failure_index = tonumber(words[1])
+			local fileToOpen = detail_array[failure_index]
+			vim.cmd(":edit " .. fileToOpen)
+		end)
+		return true
+	end
+
+	picker
+		.new({}, {
+			prompt_title = "Failures",
+			results_title = "Open failure contents",
+			finder = finders.new_table({
+				results = failure_elements,
+			}),
+			cwd = findWorkspace(),
+			attach_mappings = attach_callback,
+		})
+		:find()
+	-- -- print(#failure_elements)
 end
 
 local function printNotifications()
@@ -115,6 +161,7 @@ local function connect()
 			["$trunk/publishFailures"] = function(err, result, ctx, config)
 				-- TODO: Clear these using the empty list rule
 				logger("failure")
+				print("Trunk failure occurred. Run :TrunkStatus to view")
 				failures[result.name] = result.failures
 			end,
 			["$/progress"] = function(err, result, ctx, config)
@@ -203,9 +250,15 @@ local function checkQuery()
 	if not isempty(currentPath) then
 		local workspace = findWorkspace()
 		-- TODO: Make this do a proper relative path transformation
-		-- TODO: Make this return a value and print it
+		-- TODO: Make this return a value and print it rather than showing the execution
 		local relativePath = string.sub(currentPath, #workspace + 2)
-		vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
+		vim.cmd(
+			"!"
+				.. trunkPath
+				.. " check query "
+				.. relativePath
+				.. [[ | jq -c ".[0] | .linters" | sed s/,/,\ /g | tr -d '["]']]
+		)
 	end
 end
 
