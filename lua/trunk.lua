@@ -1,39 +1,44 @@
-DEBUG = true
+---@diagnostic disable: need-check-nil
 
-local function debug_print(...)
-	if DEBUG then
-		print(...)
-	end
-end
+local dlog = require("dlog")
+local logger = dlog("trunk_logger")
+-- run :DebugLogEnable * to enable logs
 
-debug_print("starting")
+trunkPath = "trunk"
+appendArgs = {}
+
+logger("starting")
 
 local function connect()
-	debug_print("connecting...")
+	logger("connecting...")
+	local cmd = { trunkPath, "lsp-proxy" }
+	for _, e in pairs(appendArgs) do
+		table.insert(cmd, e)
+	end
+	logger("launching %s", table.concat(cmd, " "))
+
 	return vim.lsp.start({
 		name = "neovim-trunk",
-		-- TODO: TYLER MAKE THIS AN OPTION TO PASS IN
-		cmd = { "/home/tyler/repos/trunk/bazel-bin/trunk/cli/cli", "lsp-proxy" },
-		-- cmd = {'trunk', "lsp-proxy"},
+		cmd = cmd,
 		root_dir = vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1]),
 		init_options = {
 			version = "3.4.6",
 		},
 		handlers = {
 			["$trunk/publishFileWatcherEvent"] = function(err, result, ctx, config)
-				-- debug_print("file watcher event")
+				-- logger("file watcher event")
 			end,
 			["$trunk/publishNotification"] = function(err, result, ctx, config)
-				-- debug_print("notif")
+				-- logger("notif")
 			end,
 			["$trunk/log.Error"] = function(err, result, ctx, config)
-				-- debug_print("log error (bad)")
+				-- logger("log error (bad)")
 			end,
 			["$trunk/publishFailure"] = function(err, result, ctx, config)
-				-- debug_print("failure")
+				-- logger("failure")
 			end,
 			["$/progress"] = function(err, result, ctx, config)
-				-- debug_print("failure")
+				-- logger("failure")
 			end,
 		},
 	})
@@ -50,12 +55,12 @@ local function split(str, sep)
 end
 
 local function start()
-	debug_print("setting up autocmds")
+	logger("setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
 	autocmd("FileType", {
 		pattern = "*",
 		callback = function()
-			debug_print("callback!")
+			logger("callback!")
 			-- This attaches the existing client since it is keyed by name
 			local client = connect()
 			vim.lsp.buf_attach_client(0, client)
@@ -66,11 +71,9 @@ local function start()
 	autocmd("BufWritePre", {
 		pattern = "<buffer>",
 		callback = function()
-			debug_print("fmt on save callback")
+			logger("fmt on save callback")
 			local cursor = vim.api.nvim_win_get_cursor(0)
-			vim.cmd([[
-        :% !trunk format-stdin %
-      ]])
+			vim.cmd([[:% !]] .. trunkPath .. [[ format-stdin %]])
 			vim.api.nvim_win_set_cursor(0, cursor)
 		end,
 	})
@@ -78,11 +81,27 @@ end
 
 local function findConfig()
 	local configDir = vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1])
-	debug_print("calling config", configDir)
+	logger("found workspace", configDir)
 	return configDir .. "/.trunk/trunk.yaml"
+end
+
+local function isempty(s)
+	return s == nil or s == ""
+end
+
+local function setup(opts)
+	logger("performing setup")
+	trunkPath = opts.name
+	if not isempty(opts.trunkPath) then
+		trunkPath = opts.trunkPath
+	end
+	if not isempty(opts.lspArgs) then
+		appendArgs = opts.lspArgs
+	end
 end
 
 return {
 	start = start,
 	findConfig = findConfig,
+	setup = setup,
 }
