@@ -1,9 +1,7 @@
 import sys
 
 
+a = 5
+a = b
 
-
-
-
-a=1
-a=b
+c = 1245
