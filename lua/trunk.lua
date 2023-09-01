@@ -96,6 +96,15 @@ local function start()
 	autocmd("FileType", {
 		pattern = "*",
 		callback = function()
+			local bufname = vim.api.nvim_buf_get_name(0)
+			logger("buffer filename: " .. bufname)
+			local fs = vim.fs
+			local findResult = fs.find(fs.basename(bufname), {path=fs.dirname(bufname)})
+			logger(table.concat(findResult, '\n'))
+			-- checks that the opened buffer actually exists, else trunk crashes
+			if #findResult == 0 then
+				return
+			end
 			logger("callback!")
 			-- This attaches the existing client since it is keyed by name
 			local client = connect()
