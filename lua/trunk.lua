@@ -33,21 +33,16 @@ local function printFailures()
 	local index = 1
 	for name, fails in pairs(failures) do
 		if #fails > 0 then
-			-- TODO: This incorrectly only shows the first failure for a given linter
-			-- TODO: Don't depend on telescope existing
-			print("added " .. name .. " " .. string.format("%d Failure %s: %s", index, name, fails[1].message))
-			-- table.insert(failure_elements, "bar")
-			-- failure_elements["foo"] = "bar"
-			-- failure_elements[name] = string.format("Failure %s: %s", name, fails[1].message)
+			-- TODO: This incorrectly only shows the first failure for a given linter. There may be multiple
+			-- TODO: Don't depend on telescope being sourced
 			table.insert(failure_elements, string.format("%d Failure %s: %s", index, name, fails[1].message))
 			table.insert(detail_array, fails[1].detailPath)
 
-			-- print(string.format("Failure %s: [%s]", name, table.concat(messages, ", ")))
 			index = index + 1
 		end
 	end
 
-	print(table.concat(detail_array, "\n"))
+	logger(table.concat(failure_elements, ","))
 
 	local picker = require("telescope.pickers")
 	local finders = require("telescope.finders")
@@ -71,18 +66,21 @@ local function printFailures()
 		return true
 	end
 
-	picker
-		.new({}, {
-			prompt_title = "Failures",
-			results_title = "Open failure contents",
-			finder = finders.new_table({
-				results = failure_elements,
-			}),
-			cwd = findWorkspace(),
-			attach_mappings = attach_callback,
-		})
-		:find()
-	-- -- print(#failure_elements)
+	if #failure_elements > 0 then
+		picker
+			.new({}, {
+				prompt_title = "Failures",
+				results_title = "Open failure contents",
+				finder = finders.new_table({
+					results = failure_elements,
+				}),
+				cwd = findWorkspace(),
+				attach_mappings = attach_callback,
+			})
+			:find()
+	else
+		print("No failures")
+	end
 end
 
 local function printNotifications()
