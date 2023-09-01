@@ -1,4 +1,7 @@
+-- verifies that this script is actually sourced
 print("Hello world!")
+
+-- set up lazypath for plugin loading
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
@@ -13,16 +16,16 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({{
+  -- recommended theme plugin
   "folke/tokyonight.nvim",
   lazy = false,
   priority = 1000,
   opts = {},
 },
 {
-  dir = "~/neovim-trunk",
+  -- neovim-trunk plugin
+  -- replace this with your own path to this repo
+  dir = "/home/tyler/repos/neovim-trunk",
   lazy = false,
--- },
--- {
---   "~whynothugo/lsp_lines.nvim",
---   lazy = false,
+  -- opts = {},
 }})
