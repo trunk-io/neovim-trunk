@@ -19,7 +19,7 @@ require("lazy").setup({{
   opts = {},
 },
 {
-  dir = "/home/tyler/repos/neovim-trunk",
+  dir = "~/neovim-trunk",
   lazy = false,
 -- },
 -- {
