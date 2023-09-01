@@ -156,7 +156,15 @@ local function start()
 				logger("fmt on save callback")
 				-- TODO: TYLER VERIFY PATH IS NOT NIL
 				local cursor = vim.api.nvim_win_get_cursor(0)
-				vim.cmd(":% !" .. trunkPath .. " format-stdin %:p")
+				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
+				vim.cmd(
+					":% !tee /tmp/.trunk-format-"
+						.. bufname
+						.. " | "
+						.. trunkPath
+						.. " format-stdin %:p || cat /tmp/.trunk-format-"
+						.. bufname
+				)
 				vim.api.nvim_win_set_cursor(0, cursor)
 			end
 		end,
