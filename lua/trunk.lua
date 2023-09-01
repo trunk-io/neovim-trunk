@@ -103,14 +103,13 @@ local function start()
 		end,
 	})
 
-	-- TODO: TYLER ONLY WORKS WITH FIRST OPENED FILE
 	autocmd("BufWritePre", {
-		pattern = "<buffer>",
+		pattern = "*",
 		callback = function()
 			if formatOnSave then
 				logger("fmt on save callback")
 				local cursor = vim.api.nvim_win_get_cursor(0)
-				vim.cmd([[:% !]] .. trunkPath .. [[ format-stdin %]])
+				vim.cmd(":% !" .. trunkPath .. " format-stdin %")
 				vim.api.nvim_win_set_cursor(0, cursor)
 			end
 		end,
