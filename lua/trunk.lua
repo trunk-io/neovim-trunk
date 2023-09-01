@@ -20,6 +20,10 @@ local function isempty(s)
 	return s == nil or s == ""
 end
 
+local function findWorkspace()
+	return vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1])
+end
+
 local function printFailures()
 	for name, fails in pairs(failures) do
 		-- empty list signifies failures have been resolved/cleared
@@ -51,7 +55,7 @@ local function connect()
 	return vim.lsp.start({
 		name = "neovim-trunk",
 		cmd = cmd,
-		root_dir = vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1]),
+		root_dir = findWorkspace(),
 		init_options = {
 			version = "3.4.6",
 		},
@@ -123,7 +127,7 @@ local function start()
 end
 
 local function findConfig()
-	local configDir = vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1])
+	local configDir = findWorkspace()
 	logger("found workspace", configDir)
 	return configDir .. "/.trunk/trunk.yaml"
 end
@@ -148,6 +152,17 @@ local function printStatus()
 	printNotifications()
 end
 
+local function checkQuery()
+	local currentPath = vim.api.nvim_buf_get_name(0)
+	if not isempty(currentPath) then
+		local workspace = findWorkspace()
+		-- TODO: Make this do a proper relative path transformation
+		-- TODO: Make this return a value and print it
+		local relativePath = string.sub(currentPath, #workspace + 2)
+		vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
+	end
+end
+
 -- TODO: Make a picker or a hover for action notifications
 
 return {
@@ -155,4 +170,5 @@ return {
 	findConfig = findConfig,
 	setup = setup,
 	printStatus = printStatus,
+	checkQuery = checkQuery,
 }

@@ -17,6 +17,10 @@ command! TrunkConfig :call OpenConfig()
 " command to render any errors
 command! TrunkStatus lua require'trunk'.printStatus()
 
+" command to list all applicable linters for a file
+command! TrunkQuery lua require'trunk'.checkQuery()
+
+
 let &cpo = s:save_cpo " and restore after
 unlet s:save_cpo
 

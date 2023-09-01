@@ -41,7 +41,8 @@ A default set of configuration is provided for new users in the [suggested_globa
 Other commands:
 
 1. `:TrunkConfig` to open the repo `.trunk/trunk.yaml` file for editing.
-2. `:TrunkStatus` to render any failures or action notifications
+2. `:TrunkStatus` to render any failures or action notifications.
+3. `:TrunkQuery` to view a list of linters that run on your current file.
 
 ## Configuration
 
