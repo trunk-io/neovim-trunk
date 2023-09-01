@@ -1,7 +1,4 @@
 import sys
 
-
-a = 5
-a = b
-
-c = 567
+a = 1
+b = 2

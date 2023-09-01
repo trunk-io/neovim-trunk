@@ -109,7 +109,7 @@ local function start()
 			if formatOnSave then
 				logger("fmt on save callback")
 				local cursor = vim.api.nvim_win_get_cursor(0)
-				vim.cmd(":% !" .. trunkPath .. " format-stdin %")
+				vim.cmd(":% !" .. trunkPath .. " format-stdin %:p")
 				vim.api.nvim_win_set_cursor(0, cursor)
 			end
 		end,
