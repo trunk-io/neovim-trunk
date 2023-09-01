@@ -159,6 +159,7 @@ local function connect()
 			["$trunk/publishFailures"] = function(err, result, ctx, config)
 				-- TODO: Clear these using the empty list rule
 				logger("failure")
+				-- Consider removing this print, it can sometimes be obtrusive.
 				print("Trunk failure occurred. Run :TrunkStatus to view")
 				failures[result.name] = result.failures
 			end,
@@ -181,7 +182,7 @@ local function start()
 			local fs = vim.fs
 			local findResult = fs.find(fs.basename(bufname), { path = fs.dirname(bufname) })
 			logger(table.concat(findResult, "\n"))
-			-- checks that the opened buffer actually exists, else trunk crashes
+			-- Checks that the opened buffer actually exists, else trunk crashes
 			if #findResult == 0 then
 				return
 			end
@@ -197,9 +198,9 @@ local function start()
 		callback = function()
 			if formatOnSave then
 				logger("fmt on save callback")
-				-- TODO: TYLER VERIFY PATH IS NOT NIL
 				local cursor = vim.api.nvim_win_get_cursor(0)
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
+				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
 				vim.cmd(
 					":% !tee /tmp/.trunk-format-"
 						.. bufname
