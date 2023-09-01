@@ -57,6 +57,7 @@ local function connect()
 		cmd = cmd,
 		root_dir = findWorkspace(),
 		init_options = {
+			-- TODO: Use a correct version and allow lsp to be flexible
 			version = "3.4.6",
 		},
 		handlers = {
@@ -87,16 +88,6 @@ local function connect()
 			end,
 		},
 	})
-end
-
--- TODO: TYLER CAN WE REMOVE THIS?
-local function split(str, sep)
-	local result = {}
-	local regex = ("([^%s]+)"):format(sep)
-	for each in str:gmatch(regex) do
-		table.insert(result, each)
-	end
-	return result
 end
 
 local function start()
