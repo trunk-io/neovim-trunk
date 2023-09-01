@@ -28,7 +28,7 @@ require("lazy").setup({{
 }})
 ```
 
-A default set of configuration is provided for new users in the [globals](./globals/) directory. Copy these files into your `~/.config/nvim` folder.
+A default set of configuration is provided for new users in the [suggested_globals](./suggested_globals/) directory. Copy these files into your `~/.config/nvim` folder.
 
 ## Usage
 
@@ -40,7 +40,8 @@ A default set of configuration is provided for new users in the [globals](./glob
 
 Other commands:
 
-1. TrunkConfig to open the repo `.trunk/trunk.yaml` file for editing.
+1. `:TrunkConfig` to open the repo `.trunk/trunk.yaml` file for editing.
+2. `:TrunkStatus` to render any failures or action notifications
 
 ## Configuration
 
@@ -59,6 +60,8 @@ config = {
 ## Notes
 
 Debug logs are supported through the use of the [smartpde/debuglog](https://github.com/smartpde/debuglog). Add a plugin source in your global setup, run `require("debuglog").setup()`, and in nvim run `:DebugLogEnable *`
+
+You can use [Trouble](https://github.com/folke/trouble.nvim) to view a summary of diagnostics
 
 For future development, additional effort is needed for the following features:
 

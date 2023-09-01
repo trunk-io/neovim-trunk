@@ -1,5 +1,5 @@
 -- verifies that this script is actually sourced
-print("Hello world!")
+-- print("Hello world!")
 
 -- set up lazypath for plugin loading
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -26,6 +26,10 @@ require("lazy").setup({
 	{
 		"smartpde/debuglog",
 		lazy = false,
+	},
+	{
+		"folke/trouble.nvim",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
 	},
 	{
 		-- neovim-trunk plugin

@@ -4,11 +4,41 @@ local dlog = require("dlog")
 local logger = dlog("trunk_logger")
 -- run :DebugLogEnable * to enable logs
 
+-- config variables
 local trunkPath = "trunk"
 local appendArgs = {}
 local formatOnSave = true
 
+-- state tracking
+local errors = {}
+local failures = {}
+local notifications = {}
+
 logger("starting")
+
+local function isempty(s)
+	return s == nil or s == ""
+end
+
+local function printFailures()
+	for name, fails in pairs(failures) do
+		-- empty list signifies failures have been resolved/cleared
+		-- TODO: Add this clearing logic to the handler
+		if #fails > 0 then
+			local messages = {}
+			for _, f in pairs(fails) do
+				table.insert(messages, f.message)
+			end
+			print(string.format("Failure %s: [%s]", name, table.concat(messages, ", ")))
+		end
+	end
+end
+
+local function printNotifications()
+	for _, v in pairs(notifications) do
+		print(string.format("%s:\n%s", v.title, v.message))
+	end
+end
 
 local function connect()
 	logger("connecting...")
@@ -30,16 +60,26 @@ local function connect()
 				-- logger("file watcher event")
 			end,
 			["$trunk/publishNotification"] = function(err, result, ctx, config)
-				-- logger("notif")
+				logger("notif")
+				for _, v in pairs(result.notifications) do
+					table.insert(notifications, v)
+				end
 			end,
 			["$trunk/log.Error"] = function(err, result, ctx, config)
+				-- TODO: Clear these in a meaningful way
+				-- TODO: Debug why this isn't writing errors
+				logger(err, result, ctx, config)
+				table.insert(errors, ctx.params)
 				-- logger("log error (bad)")
 			end,
-			["$trunk/publishFailure"] = function(err, result, ctx, config)
-				-- logger("failure")
+			["$trunk/publishFailures"] = function(err, result, ctx, config)
+				-- TODO: Clear these using the empty list rule
+				logger("failure")
+				failures[result.name] = result.failures
 			end,
 			["$/progress"] = function(err, result, ctx, config)
-				-- logger("failure")
+				-- TODO: Conditionally add a progress bar pane?
+				-- logger("progress")
 			end,
 		},
 	})
@@ -88,10 +128,6 @@ local function findConfig()
 	return configDir .. "/.trunk/trunk.yaml"
 end
 
-local function isempty(s)
-	return s == nil or s == ""
-end
-
 local function setup(opts)
 	logger("performing setup")
 	trunkPath = opts.name
@@ -106,8 +142,17 @@ local function setup(opts)
 	end
 end
 
+local function printStatus()
+	-- TODO: Print errors
+	printFailures()
+	printNotifications()
+end
+
+-- TODO: Make a picker or a hover for action notifications
+
 return {
 	start = start,
 	findConfig = findConfig,
 	setup = setup,
+	printStatus = printStatus,
 }

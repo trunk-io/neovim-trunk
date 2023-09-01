@@ -14,6 +14,9 @@ lua require'trunk'.start()
 " command to open trunk.yaml
 command! TrunkConfig :call OpenConfig()
 
+" command to render any errors
+command! TrunkStatus lua require'trunk'.printStatus()
+
 let &cpo = s:save_cpo " and restore after
 unlet s:save_cpo
 
