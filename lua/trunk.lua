@@ -3,20 +3,21 @@
 local dlog = require("dlog")
 
 local logger = dlog("trunk_logger")
--- run :DebugLogEnable * to enable logs
+-- Run :DebugLogEnable * to enable logs
 
--- config variables
+-- Config variables
 local trunkPath = "trunk"
 local appendArgs = {}
 local formatOnSave = true
 
--- state tracking
+-- State tracking
 local errors = {}
 local failures = {}
 local notifications = {}
 
-logger("starting")
+logger("Starting Trunk plugin")
 
+-- Utils
 local function isempty(s)
 	return s == nil or s == ""
 end
@@ -25,25 +26,31 @@ local function findWorkspace()
 	return vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1])
 end
 
+local function findConfig()
+	local configDir = findWorkspace()
+	logger("Found workspace", configDir)
+	return configDir .. "/.trunk/trunk.yaml"
+end
+
+-- Handlers for user commands
 local function printFailures()
-	-- empty list of a named failure signifies failures have been resolved/cleared
-	-- TODO: Add this clearing logic to the handler
+	-- Empty list of a named failure signifies failures have been resolved/cleared
 	local failure_elements = {}
 	local detail_array = {}
 	local index = 1
 	for name, fails in pairs(failures) do
-		if #fails > 0 then
-			-- TODO: This incorrectly only shows the first failure for a given linter. There may be multiple
-			-- TODO: Don't depend on telescope being sourced
-			table.insert(failure_elements, string.format("%d Failure %s: %s", index, name, fails[1].message))
-			table.insert(detail_array, fails[1].detailPath)
+		for _, fail in pairs(fails) do
+			table.insert(failure_elements, string.format("%d Failure %s: %s", index, name, fail.message))
+			table.insert(detail_array, fail.detailPath)
 
 			index = index + 1
 		end
 	end
 
+	-- TODO: TYLER WE NEED A BETTER WAY TO RECORD LOGS SO USERS CAN REPORT THEM
 	logger(table.concat(failure_elements, ","))
 
+	-- TODO(Tyler): Don't unconditionally depend on telescope
 	local picker = require("telescope.pickers")
 	local finders = require("telescope.finders")
 	local actions = require("telescope.actions")
@@ -83,8 +90,8 @@ local function printFailures()
 	end
 end
 
-local function printNotifications()
-	-- TODO: Don't unconditionally depend on telescope
+local function printActionNotifications()
+	-- TODO(Tyler): Don't unconditionally depend on telescope
 	local picker = require("telescope.pickers")
 	local finders = require("telescope.finders")
 	local actions = require("telescope.actions")
@@ -103,6 +110,7 @@ local function printNotifications()
 				actions.select_default:replace(function()
 					actions.close(prompt_bufnr)
 					local selection = action_state.get_selected_entry()
+					-- Remove ANSI coloring from action messages
 					vim.cmd(":!" .. selection[1] .. [[ | sed -e 's/\x1b\[[0-9;]*m//g']])
 				end)
 				return true
@@ -123,62 +131,87 @@ local function printNotifications()
 	end
 end
 
+local function checkQuery()
+	local currentPath = vim.api.nvim_buf_get_name(0)
+	if not isempty(currentPath) then
+		local workspace = findWorkspace()
+		-- TODO: TYLER Make this use the CLI output type
+		local relativePath = string.sub(currentPath, #workspace + 2)
+		vim.cmd(
+			"!"
+				.. trunkPath
+				.. " check query "
+				.. relativePath
+				.. [[ | jq -c ".[0] | .linters" | sed s/,/,\ /g | tr -d '["]']]
+		)
+	end
+end
+
+-- LSP client lifetime control
 local function connect()
-	logger("connecting...")
 	local cmd = { trunkPath, "lsp-proxy" }
 	for _, e in pairs(appendArgs) do
 		table.insert(cmd, e)
 	end
-	logger("launching %s", table.concat(cmd, " "))
+	logger("Launching %s", table.concat(cmd, " "))
 
 	return vim.lsp.start({
 		name = "neovim-trunk",
 		cmd = cmd,
 		root_dir = findWorkspace(),
 		init_options = {
-			-- TODO: Use a correct version and allow lsp to be flexible
-			version = "3.4.6",
+			-- *** OFFICIAL VERSION OF PLUGIN IS IDENTIFIED HERE ***
+			version = "0.1.0",
+			-- Enum value for neovim
+			client = 2,
+			-- Based on version parsing here https://github.com/neovim/neovim/issues/23863
+			clientVersion = vim.split(vim.fn.execute("version"), "\n")[3]:sub(6),
 		},
 		handlers = {
-			["$trunk/publishFileWatcherEvent"] = function(err, result, ctx, config)
+			-- We must identify handlers for the other events we will receive but don't handle.
+			["$trunk/publishFileWatcherEvent"] = function(_, _, _, _)
 				-- logger("file watcher event")
 			end,
-			["$trunk/publishNotification"] = function(err, result, ctx, config)
-				logger("notif")
+			["$trunk/publishNotification"] = function(_, result, _, _)
+				logger("Notif")
 				for _, v in pairs(result.notifications) do
 					table.insert(notifications, v)
 				end
 			end,
 			["$trunk/log.Error"] = function(err, result, ctx, config)
-				-- TODO: Clear these in a meaningful way
-				-- TODO: Debug why this isn't writing errors
+				-- TODO(Tyler): Clear and surface these in a meaningful way
 				logger(err, result, ctx, config)
 				table.insert(errors, ctx.params)
-				-- logger("log error (bad)")
 			end,
-			["$trunk/publishFailures"] = function(err, result, ctx, config)
-				-- TODO: Clear these using the empty list rule
-				logger("failure")
+			["$trunk/publishFailures"] = function(_, result, _, _)
+				logger("Failure received")
 				-- Consider removing this print, it can sometimes be obtrusive.
 				print("Trunk failure occurred. Run :TrunkStatus to view")
-				failures[result.name] = result.failures
+				if #result.failures > 0 then
+					failures[result.name] = result.failures
+				else
+					-- This empty failure list is sent when the clear button in VSCode is hit.
+					-- TODO(Tyler): Add in the ability to clear failures during a session.
+					table.remove(failures, result.name)
+				end
 			end,
-			["$/progress"] = function(err, result, ctx, config)
-				-- TODO: Conditionally add a progress bar pane?
+			["$/progress"] = function(_, _, _, _)
+				-- TODO(Tyler): Conditionally add a progress bar pane?
 				-- logger("progress")
 			end,
 		},
 	})
 end
 
+-- Startup, including attaching autocmds
 local function start()
-	logger("setting up autocmds")
+	logger("Setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
 	autocmd("FileType", {
 		pattern = "*",
 		callback = function()
 			local bufname = vim.api.nvim_buf_get_name(0)
-			logger("buffer filename: " .. bufname)
+			logger("Buffer filename: " .. bufname)
 			local fs = vim.fs
 			local findResult = fs.find(fs.basename(bufname), { path = fs.dirname(bufname) })
 			logger(table.concat(findResult, "\n"))
@@ -186,7 +219,7 @@ local function start()
 			if #findResult == 0 then
 				return
 			end
-			logger("callback!")
+			logger("Attaching to new buffer")
 			-- This attaches the existing client since it is keyed by name
 			local client = connect()
 			vim.lsp.buf_attach_client(0, client)
@@ -197,7 +230,8 @@ local function start()
 		pattern = "*",
 		callback = function()
 			if formatOnSave then
-				logger("fmt on save callback")
+				-- TODO(Tyler): Get this working with vim.lsp.buf.format({ async = false })
+				logger("Fmt on save callback")
 				local cursor = vim.api.nvim_win_get_cursor(0)
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
 				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
@@ -215,14 +249,9 @@ local function start()
 	})
 end
 
-local function findConfig()
-	local configDir = findWorkspace()
-	logger("found workspace", configDir)
-	return configDir .. "/.trunk/trunk.yaml"
-end
-
+-- Setup config variables
 local function setup(opts)
-	logger("performing setup")
+	logger("Performing setup")
 	trunkPath = opts.name
 	if not isempty(opts.trunkPath) then
 		trunkPath = opts.trunkPath
@@ -230,42 +259,17 @@ local function setup(opts)
 	if not isempty(opts.lspArgs) then
 		appendArgs = opts.lspArgs
 	end
-	if not isempty(opts.lspArgs) then
-		formatOnSave = opts.lspArgs
+	if not isempty(opts.formatOnSave) then
+		formatOnSave = opts.formatOnSave
 	end
 end
 
-local function printStatus()
-	-- TODO: Print errors
-	printFailures()
-end
-
-local function actions()
-	printNotifications()
-end
-
-local function checkQuery()
-	local currentPath = vim.api.nvim_buf_get_name(0)
-	if not isempty(currentPath) then
-		local workspace = findWorkspace()
-		-- TODO: Make this do a proper relative path transformation
-		-- TODO: Make this return a value and print it rather than showing the execution
-		local relativePath = string.sub(currentPath, #workspace + 2)
-		vim.cmd(
-			"!"
-				.. trunkPath
-				.. " check query "
-				.. relativePath
-				.. [[ | jq -c ".[0] | .linters" | sed s/,/,\ /g | tr -d '["]']]
-		)
-	end
-end
-
+-- Lua handles for plugin commands and setup
 return {
 	start = start,
 	findConfig = findConfig,
 	setup = setup,
-	printStatus = printStatus,
-	actions = actions,
+	printStatus = printFailures,
+	actions = printActionNotifications,
 	checkQuery = checkQuery,
 }
