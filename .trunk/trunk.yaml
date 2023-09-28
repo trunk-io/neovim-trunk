@@ -1,6 +1,6 @@
 version: 0.1
 cli:
-  version: 1.14.2
+  version: 1.16.2-beta.4
   options:
     - commands: [upgrade]
       args: -y --no-progress
