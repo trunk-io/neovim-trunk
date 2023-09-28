@@ -169,10 +169,10 @@ local function connect()
 		},
 		handlers = {
 			-- We must identify handlers for the other events we will receive but don't handle.
-			["$trunk/publishFileWatcherEvent"] = function(_, _, _, _)
+			["$trunk/publishFileWatcherEvent"] = function(_err, _result, _ctx, _config)
 				-- logger("file watcher event")
 			end,
-			["$trunk/publishNotification"] = function(_, result, _, _)
+			["$trunk/publishNotification"] = function(_err, result, _ctx, _config)
 				logger("Notif")
 				for _, v in pairs(result.notifications) do
 					table.insert(notifications, v)
@@ -183,7 +183,7 @@ local function connect()
 				logger(err, result, ctx, config)
 				table.insert(errors, ctx.params)
 			end,
-			["$trunk/publishFailures"] = function(_, result, _, _)
+			["$trunk/publishFailures"] = function(_err, result, _ctx, _config)
 				logger("Failure received")
 				-- Consider removing this print, it can sometimes be obtrusive.
 				print("Trunk failure occurred. Run :TrunkStatus to view")
@@ -195,7 +195,7 @@ local function connect()
 					table.remove(failures, result.name)
 				end
 			end,
-			["$/progress"] = function(_, _, _, _)
+			["$/progress"] = function(_err, _result, _ctx, _config)
 				-- TODO(Tyler): Conditionally add a progress bar pane?
 				-- logger("progress")
 			end,

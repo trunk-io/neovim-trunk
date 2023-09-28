@@ -12,7 +12,11 @@
 ---Read more at https://github.com/smartpde/debuglog#shim
 local has_debuglog, debuglog = pcall(require, "debuglog")
 
-local function noop(_) end
+local function noop2(_) end
+
+local function noop(_)
+	return noop2
+end
 
 if has_debuglog then
 	return debuglog.logger_for_shim_only
