@@ -54,6 +54,17 @@ log.new = function(config, standalone)
 		obj = {}
 	end
 
+	local logFile = io.open(config.out_file, "r")
+	if logFile ~= nil then
+		local origSize = logFile:seek("end")
+		if origSize > 100000 then
+			io.close(logFile)
+			os.remove(config.out_file)
+		else
+			io.close(logFile)
+		end
+	end
+
 	local levels = {}
 	for i, v in ipairs(config.modes) do
 		levels[v.name] = i

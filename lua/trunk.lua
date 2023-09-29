@@ -157,8 +157,7 @@ local function connect()
 		init_options = {
 			-- *** OFFICIAL VERSION OF PLUGIN IS IDENTIFIED HERE ***
 			version = "0.1.0",
-			-- Enum value for neovim
-			client = 2,
+			clientType = "neovim",
 			-- Based on version parsing here https://github.com/neovim/neovim/issues/23863
 			clientVersion = vim.split(vim.fn.execute("version"), "\n")[3]:sub(6),
 		},
