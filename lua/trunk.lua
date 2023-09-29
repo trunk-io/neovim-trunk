@@ -25,7 +25,6 @@ local function findConfig()
 end
 
 -- Handlers for user commands
--- TODO: TYLER WE NEED TO CYCLE THIS
 local logger = require("log")
 logger.info("Starting")
 
@@ -130,15 +129,8 @@ local function checkQuery()
 	local currentPath = vim.api.nvim_buf_get_name(0)
 	if not isempty(currentPath) then
 		local workspace = findWorkspace()
-		-- TODO: TYLER Make this use the CLI output type
 		local relativePath = string.sub(currentPath, #workspace + 2)
-		vim.cmd(
-			"!"
-				.. trunkPath
-				.. " check query "
-				.. relativePath
-				.. [[ | jq -c ".[0] | .linters" | sed s/,/,\ /g | tr -d '["]']]
-		)
+		vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
 	end
 end
 
