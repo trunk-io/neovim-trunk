@@ -10,6 +10,9 @@ local errors = {}
 local failures = {}
 local notifications = {}
 
+local logger = require("log")
+logger.info("Starting")
+
 local function isempty(s)
 	return s == nil or s == ""
 end
@@ -21,13 +24,10 @@ end
 local function findConfig()
 	local configDir = findWorkspace()
 	logger.info("Found workspace", configDir)
-	return configDir .. "/.trunk/trunk.yaml"
+	return configDir and configDir .. "/.trunk/trunk.yaml" or ".trunk/trunk.yaml"
 end
 
 -- Handlers for user commands
-local logger = require("log")
-logger.info("Starting")
-
 local function printFailures()
 	-- Empty list of a named failure signifies failures have been resolved/cleared
 	local failure_elements = {}
@@ -42,7 +42,12 @@ local function printFailures()
 		end
 	end
 
-	logger.fmt_info("Failures: %s", table.concat(failure_elements, ","))
+	if #failure_elements > 0 then
+		logger.info("Failures:", table.concat(failure_elements, ","))
+	else
+		logger.info("No failures")
+		return
+	end
 
 	-- TODO(Tyler): Don't unconditionally depend on telescope
 	local picker = require("telescope.pickers")
@@ -129,8 +134,12 @@ local function checkQuery()
 	local currentPath = vim.api.nvim_buf_get_name(0)
 	if not isempty(currentPath) then
 		local workspace = findWorkspace()
-		local relativePath = string.sub(currentPath, #workspace + 2)
-		vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
+		if isempty(workspace) then
+			print("Must be inside a Trunk workspace to run this command")
+		else
+			local relativePath = string.sub(currentPath, #workspace + 2)
+			vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
+		end
 	end
 end
 
@@ -141,52 +150,55 @@ local function connect()
 		table.insert(cmd, e)
 	end
 	logger.trace("Launching " .. table.concat(cmd, " "))
+	local workspace = findWorkspace()
 
-	return vim.lsp.start({
-		name = "neovim-trunk",
-		cmd = cmd,
-		root_dir = findWorkspace(),
-		init_options = {
-			-- *** OFFICIAL VERSION OF PLUGIN IS IDENTIFIED HERE ***
-			version = "0.1.0",
-			clientType = "neovim",
-			-- Based on version parsing here https://github.com/neovim/neovim/issues/23863
-			clientVersion = vim.split(vim.fn.execute("version"), "\n")[3]:sub(6),
-		},
-		handlers = {
-			-- We must identify handlers for the other events we will receive but don't handle.
-			["$trunk/publishFileWatcherEvent"] = function(_err, _result, _ctx, _config)
-				-- logger.info("File watcher event")
-			end,
-			["$trunk/publishNotification"] = function(_err, result, _ctx, _config)
-				logger.info("Action notification received")
-				for _, v in pairs(result.notifications) do
-					table.insert(notifications, v)
-				end
-			end,
-			["$trunk/log.Error"] = function(err, result, ctx, config)
-				-- TODO(Tyler): Clear and surface these in a meaningful way
-				logger.error(err, result, ctx, config)
-				table.insert(errors, ctx.params)
-			end,
-			["$trunk/publishFailures"] = function(_err, result, _ctx, _config)
-				logger.info("Failure received")
-				-- Consider removing this print, it can sometimes be obtrusive.
-				print("Trunk failure occurred. Run :TrunkStatus to view")
-				if #result.failures > 0 then
-					failures[result.name] = result.failures
-				else
-					-- This empty failure list is sent when the clear button in VSCode is hit.
-					-- TODO(Tyler): Add in the ability to clear failures during a session.
-					table.remove(failures, result.name)
-				end
-			end,
-			["$/progress"] = function(_err, _result, _ctx, _config)
-				-- TODO(Tyler): Conditionally add a progress bar pane?
-				-- logger.info("Progress")
-			end,
-		},
-	})
+	if not isempty(workspace) then
+		return vim.lsp.start({
+			name = "neovim-trunk",
+			cmd = cmd,
+			root_dir = workspace,
+			init_options = {
+				-- *** OFFICIAL VERSION OF PLUGIN IS IDENTIFIED HERE ***
+				version = "0.1.0",
+				clientType = "neovim",
+				-- Based on version parsing here https://github.com/neovim/neovim/issues/23863
+				clientVersion = vim.split(vim.fn.execute("version"), "\n")[3]:sub(6),
+			},
+			handlers = {
+				-- We must identify handlers for the other events we will receive but don't handle.
+				["$trunk/publishFileWatcherEvent"] = function(_err, _result, _ctx, _config)
+					-- logger.info("File watcher event")
+				end,
+				["$trunk/publishNotification"] = function(_err, result, _ctx, _config)
+					logger.info("Action notification received")
+					for _, v in pairs(result.notifications) do
+						table.insert(notifications, v)
+					end
+				end,
+				["$trunk/log.Error"] = function(err, result, ctx, config)
+					-- TODO(Tyler): Clear and surface these in a meaningful way
+					logger.error(err, result, ctx, config)
+					table.insert(errors, ctx.params)
+				end,
+				["$trunk/publishFailures"] = function(_err, result, _ctx, _config)
+					logger.info("Failure received")
+					-- Consider removing this print, it can sometimes be obtrusive.
+					print("Trunk failure occurred. Run :TrunkStatus to view")
+					if #result.failures > 0 then
+						failures[result.name] = result.failures
+					else
+						-- This empty failure list is sent when the clear button in VSCode is hit.
+						-- TODO(Tyler): Add in the ability to clear failures during a session.
+						table.remove(failures, result.name)
+					end
+				end,
+				["$/progress"] = function(_err, _result, _ctx, _config)
+					-- TODO(Tyler): Conditionally add a progress bar pane?
+					-- logger.info("Progress")
+				end,
+			},
+		})
+	end
 end
 
 -- Startup, including attaching autocmds
@@ -207,7 +219,9 @@ local function start()
 			logger.debug("Attaching to new buffer")
 			-- This attaches the existing client since it is keyed by name
 			local client = connect()
-			vim.lsp.buf_attach_client(0, client)
+			if client ~= nil then
+				vim.lsp.buf_attach_client(0, client)
+			end
 		end,
 	})
 

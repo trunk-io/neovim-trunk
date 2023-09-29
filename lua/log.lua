@@ -20,7 +20,7 @@ local default_config = {
 	use_file = true,
 
 	-- Default file to write
-	out_file = findWorkspace() .. "/.trunk/logs/neovim.log",
+	out_file = findWorkspace() and findWorkspace() .. "/.trunk/logs/neovim.log" or "/tmp/neovim_trunk.log",
 
 	-- Any messages above this level will be logged.
 	level = "info",
