@@ -237,14 +237,18 @@ end
 -- Setup config variables
 local function setup(opts)
 	logger.info("Performing setup")
-	trunkPath = opts.name
 	if not isempty(opts.trunkPath) then
+		logger.fmt_debug("Overrode trunkPath with %s" .. opts.trunkPath)
 		trunkPath = opts.trunkPath
 	end
-	if not isempty(opts.lspArgs) then
+
+	if not isempty(opts.lspArgs) and #opts.lspArgs > 0 then
+		logger.debug("Overrode lspArgs with", table.concat(opts.lspArgs, " "))
 		appendArgs = opts.lspArgs
 	end
+
 	if not isempty(opts.formatOnSave) then
+		logger.debug("Overrode formatOnSave with", opts.formatOnSave)
 		formatOnSave = opts.formatOnSave
 	end
 end
