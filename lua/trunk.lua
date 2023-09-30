@@ -273,8 +273,13 @@ end
 -- Setup config variables
 local function setup(opts)
 	logger.info("Performing setup")
+	if not isempty(opts.logLevel) then
+		logger.log_level = opts.logLevel
+		logger.debug("Overrode loglevel with", opts.logLevel)
+	end
+
 	if not isempty(opts.trunkPath) then
-		logger.fmt_debug("Overrode trunkPath with %s" .. opts.trunkPath)
+		logger.debug("Overrode trunkPath with" .. opts.trunkPath)
 		trunkPath = opts.trunkPath
 	end
 

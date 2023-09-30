@@ -53,6 +53,7 @@ log.new = function(config, standalone)
 	else
 		obj = {}
 	end
+	obj.log_level = config.level
 
 	local logFile = io.open(config.out_file, "r")
 	if logFile ~= nil then
@@ -95,8 +96,8 @@ log.new = function(config, standalone)
 	end
 
 	local log_at_level = function(level, level_config, message_maker, ...)
-		-- Return early if we're below the config.level
-		if level < levels[config.level] then
+		-- Return early if we're below the obj.log_level
+		if level < levels[obj.log_level] then
 			return
 		end
 		local nameupper = level_config.name:upper()
