@@ -1,35 +1,20 @@
 version: 0.1
 cli:
-  version: 1.16.2-beta.4
+  version: 1.16.3-beta.3
   options:
     - commands: [upgrade]
       args: -y --no-progress
 plugins:
   sources:
     - id: trunk
-      ref: v1.2.2
+      ref: v1.2.5
       uri: https://github.com/trunk-io/plugins
-runtimes:
-  enabled:
-    - node@18.12.1
-    - python@3.10.8
+    - id: configs
+      uri: https://github.com/trunk-io/configs
+      ref: v0.0.7
 lint:
   enabled:
-    - bandit@1.7.5
-    - checkov@2.4.9
-    - isort@5.12.0
-    - taplo@0.8.1
-    - trivy@0.44.1
-    - yamllint@1.32.0
-    - stylua@0.18.1
-    - ruff@0.0.286
-    - black@23.7.0
-    - mypy@1.5.1
-    - pylint@2.17.5
-    - git-diff-check
-    - markdownlint@0.35.0
-    - prettier@3.0.3
-    - trufflehog@3.54.1
+    - stylua@0.18.2
   ignore:
     - linters: [ALL]
       paths: [lsp*]
