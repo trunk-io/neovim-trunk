@@ -24,10 +24,6 @@ require("lazy").setup({
 		opts = {},
 	},
 	{
-		"smartpde/debuglog",
-		lazy = false,
-	},
-	{
 		"folke/trouble.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 	},
@@ -42,7 +38,6 @@ require("lazy").setup({
 			-- formatOnSave = true,
 		},
 		main = "trunk",
+		dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
 	},
 })
-
-require("debuglog").setup()

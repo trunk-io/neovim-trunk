@@ -78,8 +78,14 @@ local function printFailures()
 
 			local failure_index = tonumber(words[1])
 			local fileToOpen = detail_array[failure_index]
-			fileToOpen = fileToOpen:gsub("^file:///", "")
+			logger.info("file to open", fileToOpen)
+			if is_win() then
+				fileToOpen = fileToOpen:gsub("^file:///", "")
+			else
+				fileToOpen = fileToOpen:gsub("^file://", "")
+			end
 			fileToOpen = fileToOpen:gsub("%%3A", ":")
+			logger.info("file to open", fileToOpen)
 			vim.cmd(":edit " .. fileToOpen)
 		end)
 		return true
