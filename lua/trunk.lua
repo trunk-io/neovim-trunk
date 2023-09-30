@@ -189,7 +189,7 @@ local function connect()
 			handlers = {
 				-- We must identify handlers for the other events we will receive but don't handle.
 				["$trunk/publishFileWatcherEvent"] = function(_err, _result, _ctx, _config)
-					-- logger.info("File watcher event")
+					-- We don't handle file watcher events in neovim
 				end,
 				["$trunk/publishNotification"] = function(_err, result, _ctx, _config)
 					logger.info("Action notification received")
@@ -204,7 +204,7 @@ local function connect()
 				end,
 				["$trunk/publishFailures"] = function(_err, result, _ctx, _config)
 					logger.info("Failure received")
-					-- Consider removing this print, it can sometimes be obtrusive.
+					-- TODO(Tyler): Consider removing this print, it can sometimes be obtrusive.
 					print("Trunk failure occurred. Run :TrunkStatus to view")
 					if #result.failures > 0 then
 						failures[result.name] = result.failures
@@ -216,7 +216,6 @@ local function connect()
 				end,
 				["$/progress"] = function(_err, _result, _ctx, _config)
 					-- TODO(Tyler): Conditionally add a progress bar pane?
-					-- logger.info("Progress")
 				end,
 			},
 		})
