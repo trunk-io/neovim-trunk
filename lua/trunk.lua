@@ -1,9 +1,20 @@
 ---@diagnostic disable: need-check-nil
 
 -- Config variables
-local trunkPath = "trunk"
+local function is_win()
+	return package.config:sub(1, 1) == "\\"
+end
+
+local trunkPath = is_win() and "trunk.ps1" or "trunk"
 local appendArgs = {}
 local formatOnSave = true
+
+local function executionTrunkPath()
+	if trunkPath:match(".ps1$") then
+		return { "powershell", "-ExecutionPolicy", "ByPass", trunkPath }
+	end
+	return { trunkPath }
+end
 
 -- State tracking
 local errors = {}
@@ -67,6 +78,8 @@ local function printFailures()
 
 			local failure_index = tonumber(words[1])
 			local fileToOpen = detail_array[failure_index]
+			fileToOpen = fileToOpen:gsub("^file:///", "")
+			fileToOpen = fileToOpen:gsub("%%3A", ":")
 			vim.cmd(":edit " .. fileToOpen)
 		end)
 		return true
@@ -109,8 +122,9 @@ local function printActionNotifications()
 				actions.select_default:replace(function()
 					actions.close(prompt_bufnr)
 					local selection = action_state.get_selected_entry()
+					local command = selection[1]:gsub("^trunk", table.concat(executionTrunkPath(), " "))
 					-- Remove ANSI coloring from action messages
-					vim.cmd(":!" .. selection[1] .. [[ | sed -e 's/\x1b\[[0-9;]*m//g']])
+					vim.cmd(":!" .. command .. [[ | sed -e 's/\x1b\[[0-9;]*m//g']])
 				end)
 				return true
 			end
@@ -138,18 +152,20 @@ local function checkQuery()
 			print("Must be inside a Trunk workspace to run this command")
 		else
 			local relativePath = string.sub(currentPath, #workspace + 2)
-			vim.cmd("!" .. trunkPath .. " check query " .. relativePath)
+			vim.cmd("!" .. table.concat(executionTrunkPath(), " ") .. " check query " .. relativePath)
 		end
 	end
 end
 
 -- LSP client lifetime control
 local function connect()
-	local cmd = { trunkPath, "lsp-proxy" }
+	local cmd = executionTrunkPath()
+	table.insert(cmd, "lsp-proxy")
+
 	for _, e in pairs(appendArgs) do
 		table.insert(cmd, e)
 	end
-	logger.trace("Launching " .. table.concat(cmd, " "))
+	logger.debug("Launching " .. table.concat(cmd, " "))
 	local workspace = findWorkspace()
 
 	if not isempty(workspace) then
@@ -238,7 +254,7 @@ local function start()
 					":% !tee /tmp/.trunk-format-"
 						.. bufname
 						.. " | "
-						.. trunkPath
+						.. table.concat(executionTrunkPath(), " ")
 						.. " format-stdin %:p || cat /tmp/.trunk-format-"
 						.. bufname
 				)
