@@ -31,7 +31,7 @@ require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "v1.0.0",
+		tag = "v0.1.0",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
@@ -56,7 +56,7 @@ call plug#begin()
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-lua/plenary.nvim'
 
-Plug 'trunk-io/neovim-trunk'
+Plug 'trunk-io/neovim-trunk', { 'tag': 'v0.1.0' }
 
 call plug#end()
 ```
