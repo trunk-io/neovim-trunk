@@ -63,26 +63,6 @@ Add the following blob to your `require("lazy").setup` command:
 },
 ```
 
-### Local installation
-
-Using [lazy.nvim](https://github.com/folke/lazy.nvim), install the plugin in a global `config.lua`:
-
-```lua
-require("lazy").setup({{
-		-- replace this with your own path to this repo
-		dir = "/home/tyler/repos/neovim-trunk",
-		lazy = false,
-		config = {
-			-- trunkPath = "/home/tyler/repos/trunk/bazel-bin/trunk/cli/cli",
-			-- lspArgs = { "--log-file=/home/tyler/repos/neovim-trunk/lsp_new.log" },
-			-- formatOnSave = true,
-		},
-		main = "trunk",
-}})
-```
-
-A default set of configuration is provided for new users in the [suggested_globals](./suggested_globals/) directory. Copy these files into your `~/.config/nvim` folder.
-
 ## Usage
 
 1. Verify that [trunk](https://docs.trunk.io/cli) is in the PATH and init'd in the repo
