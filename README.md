@@ -1,3 +1,4 @@
+# This is a work in progress - it is mostly feature complete, but missing docs and setup instructions
 ## Overview
 
 Screenshots
