@@ -19,62 +19,29 @@ below:
 - Minimum Trunk CLI version: `1.6.3`
 - Some commands require `sed` and `tee` to be in `PATH`.
 
-<!-- TODO: TYLER MOVE THIS DOWN AND RESTRUCTURE -->
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
-For all of the below installation methods:
-
-- Create a file `lua/config.lua` in your nvim config folder (usually `~/.config/nvim/`).
-- Add the line `lua require("config")` to your `init.vim` (usually `~/.config/nvim/init.vim`).
-
-### No prior plugin manager (using [lazy.nvim](https://github.com/folke/lazy.nvim))
-
-Paste the following into your `config.lua`:
+1. Follow the [lazy.nvim install instructions](https://github.com/folke/lazy.nvim#-installation) to
+   modify your `lua/config.lua` file (usually `~/.config/nvim/lua/config.lua`).
+2. Add the line `lua require("config")` to your `init.vim` file (usually `~/.config/nvim/init.vim`).
+3. Add the following setup to your `lua/config.lua` file:
 
 ```lua
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable", -- latest stable release
-		lazypath,
-	})
-end
-vim.opt.rtp:prepend(lazypath)
-
 require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "v1",
-		-- these are optional config arguments - these are their default values
+		tag = "v1.0.0",
+		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
 			-- lspArgs = {},
 			-- formatOnSave = true,
 		},
-	},
+		main = "trunk",
+		dependencies = {'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim'}
+	}
 })
-```
-
-### [lazy.nvim](https://github.com/folke/lazy.nvim)
-
-Add the following blob to your `require("lazy").setup` command:
-
-```lua
-{
-	"trunk-io/neovim-trunk",
-	lazy = false,
-	tag = "v1",
-	-- these are optional config arguments - these are their default values
-	config = {
-		-- trunkPath = "trunk",
-		-- lspArgs = {},
-		-- formatOnSave = true,
-	},
-},
 ```
 
 ### [vim-plug](https://github.com/junegunn/vim-plug)
