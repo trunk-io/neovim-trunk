@@ -10,7 +10,58 @@ Telescope installed: `v0.1.2`
 
 ### Remote installation
 
-_Instructions coming soon_
+For all of the below installation methods:
+
+- Create a file `lua/config.lua` in your nvim config folder (usually `~/.config/nvim/`).
+- Add the line `lua require("config")` to your `init.vim` (usually `~/.config/nvim/init.vim`).
+
+#### No prior plugin manager (using [lazy.nvim](https://github.com/folke/lazy.nvim))
+
+Paste the following into your `config.lua`:
+```lua
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({
+	{
+		"trunk-io/neovim-trunk",
+		lazy = false,
+		tag = "v1",
+		-- these are optional config arguments - these are their default values
+		config = {
+			-- trunkPath = "trunk",
+			-- lspArgs = {},
+			-- formatOnSave = true,
+		},
+	},
+})
+```
+
+#### [lazy.nvim](https://github.com/folke/lazy.nvim)
+Add the following blob to your `require("lazy").setup` command:
+```lua
+{
+	"trunk-io/neovim-trunk",
+	lazy = false,
+	tag = "v1",
+	-- these are optional config arguments - these are their default values
+	config = {
+		-- trunkPath = "trunk",
+		-- lspArgs = {},
+		-- formatOnSave = true,
+	},
+},
+```
 
 ### Local installation
 
