@@ -8,14 +8,12 @@ Screenshots
 Minimum nvim version: `v0.9.1`
 Telescope installed: `v0.1.2`
 
-### Remote installation
-
 For all of the below installation methods:
 
 - Create a file `lua/config.lua` in your nvim config folder (usually `~/.config/nvim/`).
 - Add the line `lua require("config")` to your `init.vim` (usually `~/.config/nvim/init.vim`).
 
-#### No prior plugin manager (using [lazy.nvim](https://github.com/folke/lazy.nvim))
+### No prior plugin manager (using [lazy.nvim](https://github.com/folke/lazy.nvim))
 
 Paste the following into your `config.lua`:
 ```lua
@@ -47,7 +45,7 @@ require("lazy").setup({
 })
 ```
 
-#### [lazy.nvim](https://github.com/folke/lazy.nvim)
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
 Add the following blob to your `require("lazy").setup` command:
 ```lua
 {
