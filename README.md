@@ -31,7 +31,7 @@ require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "v0.1.0",
+		tag = "*",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
@@ -39,24 +39,24 @@ require("lazy").setup({
 			-- formatOnSave = true,
 		},
 		main = "trunk",
-		dependencies = {'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim'}
+		dependencies = {"nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim"}
 	}
 })
 ```
 
 ### [vim-plug](https://github.com/junegunn/vim-plug)
 
-1. After installing vim-plug, add the following to your `init.vim` (usually
-   `~/.config/nvim/init.vim`)
+1. Install [vim-plug](https://github.com/junegunn/vim-plug#installation)
+2. Add the following to your `init.vim` file (usually `~/.config/nvim/init.vim`)
 
 ```vim
 call plug#begin()
 
 " Required dependencies
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-lua/plenary.nvim'
+Plug "nvim-telescope/telescope.nvim"
+Plug "nvim-lua/plenary.nvim"
 
-Plug 'trunk-io/neovim-trunk', { 'tag': 'v0.1.0' }
+Plug "trunk-io/neovim-trunk", { "tag": "*" }
 
 call plug#end()
 ```
@@ -65,6 +65,36 @@ call plug#end()
 3. Close and relaunch Neovim to start running Trunk
 
 _Note: Currently we do not support overriding configuration options using vim-plug._
+
+### [packer.nvim](https://github.com/wbthomason/packer.nvim)
+
+1. Follow the
+   [packer.nvim install instructions](https://github.com/wbthomason/packer.nvim#quickstart) to
+   modify your `lua/plugins.lua` file (usually `~/.config/nvim/lua/plugins.lua`).
+2. Add the line `lua require("plugins")` to your init.vim file (usually `~/.config/nvim/init.vim`)
+3. Add the following setup to your `lua/plugins.lua` file:
+
+```lua
+return require("packer").startup(function(use)
+  use {
+    "trunk-io/neovim-trunk",
+    tag = "*",
+    requires = {"nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim"},
+		-- these are optional config arguments (defaults shown)
+    config = function() require("trunk").setup({
+      -- trunkPath = "trunk",
+      -- formatOnSave = true,
+      -- lspArgs = {},
+			-- logLevel = "info"
+    }) end
+  }
+end)
+```
+
+4. Call `:PackerSync` to install and :PackerStatus` to verify
+5. Close and relaunch Neovim to start running Trunk
+
+### [paq-nvim](https://github.com/savq/paq-nvim)
 
 ## Usage
 
@@ -89,13 +119,14 @@ The neovim extension can be configured as follows:
 
 ```lua
 config = {
-  trunkPath = "/home/tyler/repos/trunk/bazel-bin/trunk/cli/cli",
-  lspArgs = { "--log-file=/home/tyler/repos/neovim-trunk/lsp_new.log" },
+  trunkPath = "trunk",
+  lspArgs = {},
   formatOnSave = true,
+	logLevel = "info"
 },
 ```
 
-(or by calling `require("neovim-trunk").setup()` with these options)
+(or by calling `require("neovim-trunk").setup({})` with these options)
 
 ## Notes
 
