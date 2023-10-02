@@ -75,10 +75,7 @@ Plug "trunk-io/neovim-trunk", { "tag": "*" }
 call plug#end()
 ```
 
-<!-- trunk-ignore(markdownlint/MD029) -->
-
 3. Call `:PlugInstall` to install and `:PlugStatus` to verify
-<!-- trunk-ignore(markdownlint/MD029) -->
 4. Close and relaunch Neovim to start running Trunk
 
 _Note: Currently we do not support overriding configuration options using vim-plug._
@@ -108,10 +105,7 @@ return require("packer").startup(function(use)
 end)
 ```
 
-<!-- trunk-ignore(markdownlint/MD029) -->
-
 4. Call `:PackerSync` to install and ``:PackerStatus` to verify
-<!-- trunk-ignore(markdownlint/MD029) -->
 5. Close and relaunch Neovim to start running Trunk
 
 ### [paq-nvim](https://github.com/savq/paq-nvim)
@@ -137,8 +131,6 @@ require "paq" {
   }
 }
 ```
-
-<!-- trunk-ignore(markdownlint/MD029) -->
 
 3. Add the line `lua require("init")` to your `init.vim` file (on UNIX `~/.config/nvim/init.vim`)
 
