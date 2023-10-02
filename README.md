@@ -17,7 +17,7 @@ Extension][vscode]. The Neovim plugin has the following capabilities:
 - Render diagnostics and autofixes inline
 - Format files on save
 - Display the list of linters that run on each file
-- View and run commands from [Trunk Actios](https://docs.trunk.io/actions) notifications
+- View and run commands from [Trunk Action](https://docs.trunk.io/actions) notifications
 
 Screenshots
 
@@ -136,7 +136,8 @@ require "paq" {
 
 ## Usage
 
-1. Verify that [trunk](https://docs.trunk.io/cli) is in the PATH and init'd in the repo
+1. Verify that [trunk](https://docs.trunk.io/cli) is in your PATH and you have run `trunk init` in
+   your repo
 2. Open a file in neovim `nvim <file>`
 3. View inline diagnostic annotations
 4. Run `:lua vim.lsp.buf.code_action()` on a highlighted section to view and apply autofixes
@@ -145,43 +146,33 @@ require "paq" {
 
 Other commands:
 
-1. `:TrunkConfig` to open the repo `.trunk/trunk.yaml` file for editing.
-2. `:TrunkStatus` to render any failures or action notifications.
-3. `:TrunkQuery` to view a list of linters that run on your current file.
-4. `:TrunkActions` to view any Trunk Actions that have created notifications and run their commands
-   as appropriate.
+1. `:TrunkConfig` to open the repo `.trunk/trunk.yaml` file for editing
+2. `:TrunkStatus` to review any linter failures
+3. `:TrunkQuery` to view the list of linters that run on your current file
+4. `:TrunkActions` to view any Trunk Actions that have generated notifications and run their
+   commands as appropriate
 
 ## Configuration
 
 The neovim extension can be configured as follows:
 
-```lua
-config = {
-  trunkPath = "trunk",
-  lspArgs = {},
-  formatOnSave = true,
-	logLevel = "info"
-},
-```
+| Option       | Configures                                             | Default |
+| ------------ | ------------------------------------------------------ | ------- |
+| trunkPath    | Where to find the Trunk CLI launcher of binary         | "trunk" |
+| lspArgs      | Optional arguments to append the Trunk LSP Server      | {}      |
+| formatOnSave | Whether or not to autoformat file buffers when written | true    |
+| logLevel     | Verbosity of logs from the Neovim extension            | "info"  |
 
-(or by calling `require("neovim-trunk").setup({})` with these options)
+(These settings can be changed after loading by calling `require("neovim-trunk").setup({})`)
 
 ## Notes
 
-Debug logs are supported through the use of the
-[smartpde/debuglog](https://github.com/smartpde/debuglog). Add a plugin source in your global setup,
-run `require("debuglog").setup()`, and in nvim run `:DebugLogEnable *`
+Unlike for VSCode, the Trunk Check Neovim Plugin does not currentlyprovide any summary views for
+diagnostics. If you'd like, you can use a plugin like
+[Trouble](https://github.com/folke/trouble.nvim) to view aggregate code actions.
 
-You can use [Trouble](https://github.com/folke/trouble.nvim) to view a summary of diagnostics
-
-For future development, additional effort is needed for the following features:
-
-- Robust logging to an output file
-- Testing outside of a repo
-- Init and auto-init
-- Telemetry
-- Better error handling and reporting
-- A robust action pane
+Please view our [docs][docs] for any additional Trunk setup instructions, as well as our
+[plugins repo](https://github.com/trunk-io/plugins) for the up to date list of supported linters.
 
 [slack]: https://slack.trunk.io
 [docs]: https://docs.trunk.io
