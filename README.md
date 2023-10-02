@@ -167,7 +167,7 @@ The neovim extension can be configured as follows:
 
 ## Notes
 
-Unlike for VSCode, the Trunk Check Neovim Plugin does not currentlyprovide any summary views for
+Unlike for VSCode, the Trunk Check Neovim Plugin does not currently provide any summary views for
 diagnostics. If you'd like, you can use a plugin like
 [Trouble](https://github.com/folke/trouble.nvim) to view aggregate code actions.
 
