@@ -19,7 +19,7 @@ Extension][vscode]. The Neovim plugin has the following capabilities:
 - Display the list of linters that run on each file
 - View and run commands from [Trunk Action](https://docs.trunk.io/actions) notifications
 
-<img width="753" alt="Screenshot 2023-10-01 at 5 46 19 PM" src="https://github.com/trunk-io/neovim-trunk/assets/42743566/01df6989-2291-434a-9d98-549c9fe19300">
+<img width="1076" alt="neovim" src="https://github.com/trunk-io/neovim-trunk/assets/42743566/f3a6c717-81d5-4058-bb56-a026b21ba980">
 
 ## Installation
 
