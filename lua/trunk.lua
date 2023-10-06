@@ -312,7 +312,7 @@ local function setup(opts)
 	end
 
 	if not isempty(opts.formatOnSaveTimeout) then
-		logger.debug("Overrode formatOnSave with", opts.formatOnSaveTimeout)
+		logger.debug("Overrode formatOnSaveTimeout with", opts.formatOnSaveTimeout)
 		formatOnSave = opts.formatOnSaveTimeout
 	end
 end
