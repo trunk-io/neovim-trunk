@@ -51,7 +51,7 @@ require("lazy").setup({
 			-- trunkPath = "trunk",
 			-- lspArgs = {},
 			-- formatOnSave = true,
-      -- formatOnSaveTimeout = 10, -- seconds
+                        -- formatOnSaveTimeout = 10, -- seconds
 			-- logLevel = "info"
 		},
 		main = "trunk",
