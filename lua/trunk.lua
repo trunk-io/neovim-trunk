@@ -8,6 +8,7 @@ end
 local trunkPath = is_win() and "trunk.ps1" or "trunk"
 local appendArgs = {}
 local formatOnSave = true
+local formatOnSaveTimeout = 10
 
 local function executionTrunkPath()
 	if trunkPath:match(".ps1$") then
@@ -233,8 +234,8 @@ local function start()
 			logger.debug("Buffer filename: " .. bufname)
 			local fs = vim.fs
 			local findResult = fs.find(fs.basename(bufname), { path = fs.dirname(bufname) })
-			-- Checks that the opened buffer actually exists, else trunk crashes
-			if #findResult == 0 then
+			-- Checks that the opened buffer actually exists and isn't a directory, else trunk crashes
+			if #findResult == 0 or vim.fn.isdirectory(bufname) ~= 0 then
 				return
 			end
 			logger.debug("Attaching to new buffer")
@@ -254,15 +255,33 @@ local function start()
 				logger.debug("Running fmt on save callback")
 				local cursor = vim.api.nvim_win_get_cursor(0)
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
+				local handle = io.popen("command -v timeouasdast")
+				local timeoutResult = handle:read("*a")
+				handle:close()
 				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
-				vim.cmd(
-					":% !tee /tmp/.trunk-format-"
-						.. bufname
-						.. " | "
-						.. table.concat(executionTrunkPath(), " ")
-						.. " format-stdin %:p || cat /tmp/.trunk-format-"
-						.. bufname
-				)
+				if is_win() or timeoutResult:len() == 0 then
+					logger.debug("Formatting without timeout")
+					vim.cmd(
+						":% !tee /tmp/.trunk-format-"
+							.. bufname
+							.. " | "
+							.. table.concat(executionTrunkPath(), " ")
+							.. " format-stdin %:p || cat /tmp/.trunk-format-"
+							.. bufname
+					)
+				else
+					logger.debug("Formatting with timeout")
+					vim.cmd(
+						":% !tee /tmp/.trunk-format-"
+							.. bufname
+							.. " | timeout "
+							.. formatOnSaveTimeout
+							.. " "
+							.. table.concat(executionTrunkPath(), " ")
+							.. " format-stdin %:p || cat /tmp/.trunk-format-"
+							.. bufname
+					)
+				end
 				vim.api.nvim_win_set_cursor(0, cursor)
 			end
 		end,
@@ -290,6 +309,11 @@ local function setup(opts)
 	if not isempty(opts.formatOnSave) then
 		logger.debug("Overrode formatOnSave with", opts.formatOnSave)
 		formatOnSave = opts.formatOnSave
+	end
+
+	if not isempty(opts.formatOnSaveTimeout) then
+		logger.debug("Overrode formatOnSave with", opts.formatOnSaveTimeout)
+		formatOnSave = opts.formatOnSaveTimeout
 	end
 end
 

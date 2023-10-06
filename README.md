@@ -30,7 +30,8 @@ instructions below:
 
 - Minimum Neovim version: `v0.9.2`
 - Minimum Trunk CLI version: `1.16.3`
-- Some commands require `sed` and `tee` to be in `PATH`.
+- Some commands require `sed` and `tee` to be in `PATH`
+- Format on save timeout only works on UNIX and if coreutils `timeout` is in `PATH`
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
@@ -50,6 +51,7 @@ require("lazy").setup({
 			-- trunkPath = "trunk",
 			-- lspArgs = {},
 			-- formatOnSave = true,
+      -- formatOnSaveTimeout = 10, -- seconds
 			-- logLevel = "info"
 		},
 		main = "trunk",
@@ -99,6 +101,7 @@ return require("packer").startup(function(use)
       -- trunkPath = "trunk",
       -- formatOnSave = true,
       -- lspArgs = {},
+      -- formatOnSaveTimeout = 10, -- seconds
 			-- logLevel = "info"
     }) end
   }
@@ -125,6 +128,7 @@ require "paq" {
       -- logLevel = "debug",
       -- trunkPath = "trunk",
       -- formatOnSave = false,
+      -- formatOnSaveTimeout = 10, -- seconds
       -- lspArgs = {}
     }) end,
     branch = "v0.1.0",
@@ -156,12 +160,13 @@ Other commands:
 
 The neovim extension can be configured as follows:
 
-| Option       | Configures                                             | Default |
-| ------------ | ------------------------------------------------------ | ------- |
-| trunkPath    | Where to find the Trunk CLI launcher of binary         | "trunk" |
-| lspArgs      | Optional arguments to append the Trunk LSP Server      | {}      |
-| formatOnSave | Whether or not to autoformat file buffers when written | true    |
-| logLevel     | Verbosity of logs from the Neovim extension            | "info"  |
+| Option              | Configures                                                               | Default |
+| ------------------- | ------------------------------------------------------------------------ | ------- |
+| trunkPath           | Where to find the Trunk CLI launcher of binary                           | "trunk" |
+| lspArgs             | Optional arguments to append the Trunk LSP Server                        | {}      |
+| formatOnSave        | Whether or not to autoformat file buffers when written                   | true    |
+| formatOnSaveTimeout | The maximum amount of time to spend attempting to autoformat, in seconds | 10      |
+| logLevel            | Verbosity of logs from the Neovim extension                              | "info"  |
 
 (These settings can be changed after loading by calling `require("neovim-trunk").setup({})`)
 
