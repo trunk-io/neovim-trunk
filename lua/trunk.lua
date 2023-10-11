@@ -23,6 +23,7 @@ local failures = {}
 local notifications = {}
 
 local logger = require("log")
+local math = require("math")
 logger.info("Starting")
 
 local function isempty(s)
@@ -254,35 +255,56 @@ local function start()
 				-- TODO(Tyler): Get this working with vim.lsp.buf.format({ async = false })
 				logger.debug("Running fmt on save callback")
 				local cursor = vim.api.nvim_win_get_cursor(0)
+				local filename = vim.api.nvim_buf_get_name(0)
+				local workspace = findWorkspace()
+				-- if filename starts with workspace
+				if filename:sub(1, #workspace) ~= workspace then
+					logger.debug("early exit")
+					return
+				end
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
-				local handle = io.popen("command -v timeouasdast")
+				local handle = io.popen("command -v timeout")
 				local timeoutResult = handle:read("*a")
 				handle:close()
 				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
+				local tmpFile = "/tmp/.trunk-format-" .. bufname
+				local tmpFormattedFile = "/tmp/.trunk-formatted-" .. bufname
+				local formatCommand = ""
 				if is_win() or timeoutResult:len() == 0 then
 					logger.debug("Formatting without timeout")
-					vim.cmd(
-						":% !tee /tmp/.trunk-format-"
-							.. bufname
-							.. " | "
-							.. table.concat(executionTrunkPath(), " ")
-							.. " format-stdin %:p || cat /tmp/.trunk-format-"
-							.. bufname
+					formatCommand = (
+						":% !tee "
+						.. tmpFile
+						.. " | "
+						.. table.concat(executionTrunkPath(), " ")
+						.. " format-stdin %:p >"
+						.. tmpFormattedFile
+						.. "&& cat "
+						.. tmpFormattedFile
+						.. "|| cat "
+						.. tmpFile
 					)
 				else
 					logger.debug("Formatting with timeout")
-					vim.cmd(
-						":% !tee /tmp/.trunk-format-"
-							.. bufname
-							.. " | timeout "
-							.. formatOnSaveTimeout
-							.. " "
-							.. table.concat(executionTrunkPath(), " ")
-							.. " format-stdin %:p || cat /tmp/.trunk-format-"
-							.. bufname
+					formatCommand = (
+						":% !tee "
+						.. tmpFile
+						.. " | timeout "
+						.. formatOnSaveTimeout
+						.. " "
+						.. table.concat(executionTrunkPath(), " ")
+						.. " format-stdin %:p >"
+						.. tmpFormattedFile
+						.. "&& cat "
+						.. tmpFormattedFile
+						.. "|| cat "
+						.. tmpFile
 					)
 				end
-				vim.api.nvim_win_set_cursor(0, cursor)
+				logger.debug("Format command: " .. formatCommand)
+				vim.cmd(formatCommand)
+				local line_count = vim.api.nvim_buf_line_count(0)
+				vim.api.nvim_win_set_cursor(0, { math.min(cursor[1], line_count), cursor[2] })
 			end
 		end,
 	})
