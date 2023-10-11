@@ -179,6 +179,9 @@ diagnostics. If you'd like, you can use a plugin like
 Please view our [docs][docs] for any additional Trunk setup instructions, as well as our
 [plugins repo](https://github.com/trunk-io/plugins) for the up to date list of supported linters.
 
+When lint diagnostics show up, they may cause the line number column increase in width. To fix this,
+run `:set signcolumn=yes` to have a column for diagnostics always present.
+
 [slack]: https://slack.trunk.io
 [docs]: https://docs.trunk.io
 [vscode]: https://marketplace.visualstudio.com/items?itemName=Trunk.io
