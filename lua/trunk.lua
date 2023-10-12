@@ -258,8 +258,7 @@ local function start()
 				local filename = vim.api.nvim_buf_get_name(0)
 				local workspace = findWorkspace()
 				-- if filename doesn't start with workspace
-				if filename:sub(1, #workspace) ~= workspace then
-					logger.debug("early exit")
+				if workspace == nil or filename:sub(1, #workspace) ~= workspace then
 					return
 				end
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
