@@ -29,7 +29,7 @@ instructions below:
 ### Prerequisites
 
 - Minimum Neovim version: `v0.9.2`
-- Minimum Trunk CLI version: `1.16.3`
+- Minimum Trunk CLI version: `1.17.0`
 - Some commands require `sed` and `tee` to be in `PATH`
 - Format on save timeout only works on UNIX and if coreutils `timeout` is in `PATH`
 
