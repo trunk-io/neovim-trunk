@@ -26,14 +26,14 @@ Extension][vscode]. The Neovim plugin has the following capabilities:
 `neovim-trunk` can be installed using your favorite Neovim plugin manager. We've included some
 instructions below:
 
+_Note: Some plugin managers offer varying capabilities for configuration and pinning refs_
+
 ### Prerequisites
 
 - Minimum Neovim version: `v0.9.2`
 - Minimum Trunk CLI version: `1.17.0`
 - Some commands require `sed` and `tee` to be in `PATH`
 - Format on save timeout only works on UNIX and if coreutils `timeout` is in `PATH`
-
-_Note: Some plugin managers offer varying capabilities for configuration and pinning refs_
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
