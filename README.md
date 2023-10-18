@@ -26,6 +26,10 @@ Extension][vscode]. The Neovim plugin has the following capabilities:
 `neovim-trunk` can be installed using your favorite Neovim plugin manager. We've included some
 instructions below:
 
+<!-- trunk-ignore-all(markdownlint/MD036) -->
+
+_Note: Some plugin managers offer varying capabilities for configuration and pinning refs_
+
 ### Prerequisites
 
 - Minimum Neovim version: `v0.9.2`
@@ -45,7 +49,7 @@ require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "*",
+		tag = "v0.1.0",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
@@ -69,10 +73,10 @@ require("lazy").setup({
 call plug#begin()
 
 " Required dependencies
-Plug "nvim-telescope/telescope.nvim"
-Plug "nvim-lua/plenary.nvim"
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-lua/plenary.nvim'
 
-Plug "trunk-io/neovim-trunk", { "tag": "*" }
+Plug 'trunk-io/neovim-trunk', { 'tag': '*' }
 
 call plug#end()
 ```
@@ -131,7 +135,6 @@ require "paq" {
       -- formatOnSaveTimeout = 10, -- seconds
       -- lspArgs = {}
     }) end,
-    branch = "v0.1.0",
   }
 }
 ```
