@@ -73,10 +73,10 @@ require("lazy").setup({
 call plug#begin()
 
 " Required dependencies
-Plug "nvim-telescope/telescope.nvim"
-Plug "nvim-lua/plenary.nvim"
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-lua/plenary.nvim'
 
-Plug "trunk-io/neovim-trunk", { "tag": "*" }
+Plug 'trunk-io/neovim-trunk', { 'tag': '*' }
 
 call plug#end()
 ```
