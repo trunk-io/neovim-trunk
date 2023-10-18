@@ -278,7 +278,7 @@ local function start()
 					-- TODO(Tyler): Handle carriage returns correctly here.
 					-- NOTE(Tyler): Powershell does not have && and || so we must use cmd /c
 					formatCommand = (
-						":% ! cmd /c \"tee "
+						':% ! cmd /c "tee '
 						.. tmpFile
 						.. " | "
 						.. table.concat(executionTrunkPath(), " ")
@@ -288,7 +288,7 @@ local function start()
 						.. tmpFormattedFile
 						.. " || cat "
 						.. tmpFile
-						.. "\""
+						.. '"'
 					)
 				elseif timeoutResult:len() == 0 then
 					logger.debug("Formatting without timeout")
