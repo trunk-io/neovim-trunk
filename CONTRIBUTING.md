@@ -51,8 +51,8 @@ Neovim plugins are setup as follows:
   - [trunk.lua](lua/trunk.lua), which defines global state for the lifetime of the plugin, provides
     functionality for each of the vimscript commands, and launches the Trunk LSP server.
   - [log.lua](lua/log.lua), which manages logging, which is written to `.trunk/logs/neovim.log` and
-    is flushed periodically. When run from outside of a Trunk repo, this log is written to
-    `/tmp/neovim_trunk.log`.
+    is flushed periodically. When run from outside of a Trunk repo, this log is written to a
+    tempfile.
 
 These files interface with the built-in [Neovim LSP framework](https://neovim.io/doc/user/lsp.html)
 to provide inline diagnostics and other features.

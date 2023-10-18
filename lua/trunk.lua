@@ -257,19 +257,40 @@ local function start()
 				local cursor = vim.api.nvim_win_get_cursor(0)
 				local filename = vim.api.nvim_buf_get_name(0)
 				local workspace = findWorkspace()
+				if is_win() then
+					workspace = workspace:gsub("/", "\\")
+				end
 				-- if filename doesn't start with workspace
 				if workspace == nil or filename:sub(1, #workspace) ~= workspace then
 					return
 				end
+
 				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
 				local handle = io.popen("command -v timeout")
 				local timeoutResult = handle:read("*a")
 				handle:close()
 				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
-				local tmpFile = "/tmp/.trunk-format-" .. bufname
-				local tmpFormattedFile = "/tmp/.trunk-formatted-" .. bufname
+				local tmpFile = os.tmpname()
+				local tmpFormattedFile = os.tmpname()
 				local formatCommand = ""
-				if is_win() or timeoutResult:len() == 0 then
+				if is_win() then
+					logger.debug("Formatting on Windows")
+					-- TODO(Tyler): Handle carriage returns correctly here.
+					-- NOTE(Tyler): Powershell does not have && and || so we must use cmd /c
+					formatCommand = (
+						':% ! cmd /c "tee '
+						.. tmpFile
+						.. " | "
+						.. table.concat(executionTrunkPath(), " ")
+						.. " format-stdin %:p >"
+						.. tmpFormattedFile
+						.. " && cat "
+						.. tmpFormattedFile
+						.. " || cat "
+						.. tmpFile
+						.. '"'
+					)
+				elseif timeoutResult:len() == 0 then
 					logger.debug("Formatting without timeout")
 					formatCommand = (
 						":% !tee "
@@ -278,9 +299,9 @@ local function start()
 						.. table.concat(executionTrunkPath(), " ")
 						.. " format-stdin %:p >"
 						.. tmpFormattedFile
-						.. "&& cat "
+						.. " && cat "
 						.. tmpFormattedFile
-						.. "|| cat "
+						.. " || cat "
 						.. tmpFile
 					)
 				else
@@ -294,15 +315,17 @@ local function start()
 						.. table.concat(executionTrunkPath(), " ")
 						.. " format-stdin %:p >"
 						.. tmpFormattedFile
-						.. "&& cat "
+						.. " && cat "
 						.. tmpFormattedFile
-						.. "|| cat "
+						.. " || cat "
 						.. tmpFile
 					)
 				end
 				logger.debug("Format command: " .. formatCommand)
 				vim.cmd(formatCommand)
 				local line_count = vim.api.nvim_buf_line_count(0)
+				os.remove(tmpFile)
+				os.remove(tmpFormattedFile)
 				vim.api.nvim_win_set_cursor(0, { math.min(cursor[1], line_count), cursor[2] })
 			end
 		end,
