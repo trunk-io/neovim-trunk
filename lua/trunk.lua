@@ -341,7 +341,7 @@ local function setup(opts)
 	end
 
 	if not isempty(opts.trunkPath) then
-		logger.debug("Overrode trunkPath with" .. opts.trunkPath)
+		logger.debug("Overrode trunkPath with " .. opts.trunkPath)
 		trunkPath = opts.trunkPath
 	end
 

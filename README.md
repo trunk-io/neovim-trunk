@@ -33,6 +33,8 @@ instructions below:
 - Some commands require `sed` and `tee` to be in `PATH`
 - Format on save timeout only works on UNIX and if coreutils `timeout` is in `PATH`
 
+_Note: Some plugin managers offer varying capabilities for configuration and pinning refs_
+
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 1. Follow the [lazy.nvim install instructions](https://github.com/folke/lazy.nvim#-installation) to
@@ -45,7 +47,7 @@ require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "*",
+		tag = "v0.1.0",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
@@ -131,7 +133,6 @@ require "paq" {
       -- formatOnSaveTimeout = 10, -- seconds
       -- lspArgs = {}
     }) end,
-    branch = "v0.1.0",
   }
 }
 ```
