@@ -26,7 +26,7 @@ Extension][vscode]. The Neovim plugin has the following capabilities:
 `neovim-trunk` can be installed using your favorite Neovim plugin manager. We've included some
 instructions below:
 
-<!-- trunk-ignore(markdownlint/MD036) -->
+<!-- trunk-ignore-all(markdownlint/MD036) -->
 
 _Note: Some plugin managers offer varying capabilities for configuration and pinning refs_
 
