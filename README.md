@@ -49,7 +49,8 @@ require("lazy").setup({
 	{
 		"trunk-io/neovim-trunk",
 		lazy = false,
-		tag = "v0.1.0",
+		-- optionally pin the version
+		-- tag = "v0.1.0",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
@@ -80,7 +81,7 @@ Plug 'trunk-io/neovim-trunk', { 'tag': '*' }
 
 call plug#end()
 
-lua require'trunk'.setup({})
+lua if not pcall(function() require'trunk'.setup({}) end) then print("Run :PlugInstall and then relaunch Neovim to setup Trunk") end
 ```
 
 3. Add settings to the `setup` command as desired.
@@ -113,7 +114,7 @@ return require("packer").startup(function(use)
 end)
 ```
 
-4. Call `:PackerSync` to install and ``:PackerStatus` to verify
+4. Call `:PackerSync` to install and `:PackerStatus` to verify
 5. Close and relaunch Neovim to start running Trunk
 
 ### [paq-nvim](https://github.com/savq/paq-nvim)
@@ -123,24 +124,21 @@ end)
 
 ```lua
 require "paq" {
-	-- Required dependencies
-	"nvim-telescope/telescope.nvim",
+  -- Required dependencies
+  "nvim-telescope/telescope.nvim",
   "nvim-lua/plenary.nvim",
-  {
-    "trunk-io/neovim-trunk",
-    run = function() require("trunk").setup({
-			-- these are optional config arguments (defaults shown)
-      -- logLevel = "debug",
-      -- trunkPath = "trunk",
-      -- formatOnSave = false,
-      -- formatOnSaveTimeout = 10, -- seconds
-      -- lspArgs = {}
-    }) end,
-  }
+  "trunk-io/neovim-trunk"
 }
+
+if not pcall(function() require'trunk'.setup({}) end) then
+  print("Run :PaqInstall and then relaunch Neovim to setup Trunk")
+end
 ```
 
-3. Add the line `lua require("init")` to your `init.vim` file (on UNIX `~/.config/nvim/init.vim`)
+3. Add settings to the `setup` command as desired.
+4. Add the line `lua require("init")` to your `init.vim` file (on UNIX `~/.config/nvim/init.vim`)
+5. Run `:PaqInstall`
+6. Close and relaunch Neovim to start running Trunk
 
 ## Usage
 

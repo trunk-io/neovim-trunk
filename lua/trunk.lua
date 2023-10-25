@@ -337,10 +337,7 @@ local function start()
 					logger.info("using --output-file")
 					trunkFormatCmd = trunkFormatCmd .. " --output-file=" .. tmpFormattedFile
 					if is_win() then
-						-- TODO: test on windows
-						-- These parens may need to be curly braces
-						-- see https://stackoverflow.com/q/5881174
-						trunkFormatCmd = "(" .. trunkFormatCmd .. ") *>$null"
+						trunkFormatCmd = "(" .. trunkFormatCmd .. ") >$null"
 					else
 						trunkFormatCmd = trunkFormatCmd .. " 1>/dev/null 2>/dev/null"
 					end
