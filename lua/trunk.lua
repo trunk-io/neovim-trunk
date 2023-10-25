@@ -21,6 +21,7 @@ end
 local errors = {}
 local failures = {}
 local notifications = {}
+local cliVersion = nil
 
 local logger = require("log")
 local math = require("math")
@@ -38,6 +39,41 @@ local function findConfig()
 	local configDir = findWorkspace()
 	logger.info("Found workspace", configDir)
 	return configDir and configDir .. "/.trunk/trunk.yaml" or ".trunk/trunk.yaml"
+end
+
+local function trim(s)
+	return s:match("^%s*(.-)%s*$")
+end
+
+local function getCliVersion()
+	local possibleVersion = nil
+	if
+		pcall(function()
+			local cmd = executionTrunkPath()
+			table.insert(cmd, #cmd + 1, "version")
+			logger.info("cli version command", table.concat(cmd, " "))
+			local output = vim.fn.systemlist(cmd)
+			possibleVersion = trim(output[#output])
+			vim.version.parse(possibleVersion)
+		end)
+	then
+		return possibleVersion
+	else
+		-- version is not parsable
+		logger.warn("Received unparsable version string", possibleVersion)
+		return nil
+	end
+end
+
+local function checkCliVersion(requiredVersionString)
+	local version = vim.version
+	if cliVersion == nil then
+		logger.info("nil CLI version")
+		return false
+	end
+	local currentVersion = version.parse(cliVersion)
+	local requiredVersion = version.parse(requiredVersionString)
+	return not version.lt(currentVersion, requiredVersion)
 end
 
 -- Handlers for user commands
@@ -226,6 +262,31 @@ end
 
 -- Startup, including attaching autocmds
 local function start()
+	cliVersion = getCliVersion()
+	logger.info("Running on CLI version:", cliVersion)
+	if cliVersion == nil then
+		logger.error("nil CLI version")
+		print(
+			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - we could not determine your Trunk CLI version."
+		)
+		print("The extension will not run until you upgrade your CLI version.")
+		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+		return
+	end
+	if not checkCliVersion("1.17.0") then
+		logger.error("Trunk CLI version must be >= 1.17.0")
+		print(
+			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion .. "."
+		)
+		print("The extension will not run until you upgrade your CLI version.")
+		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+		return
+	end
+	if not checkCliVersion("1.17.2-beta.5") then
+		logger.warn("Trunk CLI version should be >= 1.17.2")
+		print("Detected stale Trunk CLI version " .. cliVersion .. ".")
+		print(" Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+	end
 	logger.info("Setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
 	autocmd("FileType", {
@@ -265,13 +326,27 @@ local function start()
 					return
 				end
 
-				local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(0))
 				local handle = io.popen("command -v timeout")
 				local timeoutResult = handle:read("*a")
 				handle:close()
 				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
 				local tmpFile = os.tmpname()
 				local tmpFormattedFile = os.tmpname()
+				local trunkFormatCmd = table.concat(executionTrunkPath(), " ") .. " format-stdin %:p"
+				if checkCliVersion("1.17.2-beta.5") then
+					logger.info("using --output-file")
+					trunkFormatCmd = trunkFormatCmd .. " --output-file=" .. tmpFormattedFile
+					if is_win() then
+						-- TODO: test on windows
+						-- These parens may need to be curly braces
+						-- see https://stackoverflow.com/q/5881174
+						trunkFormatCmd = "(" .. trunkFormatCmd .. ") *>$null"
+					else
+						trunkFormatCmd = trunkFormatCmd .. " 1>/dev/null 2>/dev/null"
+					end
+				else
+					trunkFormatCmd = trunkFormatCmd .. " > " .. tmpFormattedFile
+				end
 				local formatCommand = ""
 				if is_win() then
 					logger.debug("Formatting on Windows")
@@ -281,9 +356,7 @@ local function start()
 						':% ! cmd /c "tee '
 						.. tmpFile
 						.. " | "
-						.. table.concat(executionTrunkPath(), " ")
-						.. " format-stdin %:p >"
-						.. tmpFormattedFile
+						.. trunkFormatCmd
 						.. " && cat "
 						.. tmpFormattedFile
 						.. " || cat "
@@ -296,9 +369,7 @@ local function start()
 						":% !tee "
 						.. tmpFile
 						.. " | "
-						.. table.concat(executionTrunkPath(), " ")
-						.. " format-stdin %:p >"
-						.. tmpFormattedFile
+						.. trunkFormatCmd
 						.. " && cat "
 						.. tmpFormattedFile
 						.. " || cat "
@@ -312,9 +383,7 @@ local function start()
 						.. " | timeout "
 						.. formatOnSaveTimeout
 						.. " "
-						.. table.concat(executionTrunkPath(), " ")
-						.. " format-stdin %:p >"
-						.. tmpFormattedFile
+						.. trunkFormatCmd
 						.. " && cat "
 						.. tmpFormattedFile
 						.. " || cat "
@@ -334,14 +403,14 @@ end
 
 -- Setup config variables
 local function setup(opts)
-	logger.info("Performing setup")
+	logger.info("Performing setup", opts)
 	if not isempty(opts.logLevel) then
 		logger.log_level = opts.logLevel
 		logger.debug("Overrode loglevel with", opts.logLevel)
 	end
 
 	if not isempty(opts.trunkPath) then
-		logger.debug("Overrode trunkPath with " .. opts.trunkPath)
+		logger.debug("Overrode trunkPath with", opts.trunkPath)
 		trunkPath = opts.trunkPath
 	end
 
@@ -359,6 +428,8 @@ local function setup(opts)
 		logger.debug("Overrode formatOnSaveTimeout with", opts.formatOnSaveTimeout)
 		formatOnSave = opts.formatOnSaveTimeout
 	end
+
+	start()
 end
 
 -- Lua handles for plugin commands and setup

@@ -8,9 +8,6 @@ function! OpenConfig()
   execute 'edit '.fnameescape(configFile)
 endfunction
 
-" command to run our plugin
-lua require'trunk'.start()
-
 " command to open trunk.yaml
 command! TrunkConfig :call OpenConfig()
 
