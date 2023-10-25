@@ -124,7 +124,7 @@ end)
 
 ```lua
 require "paq" {
-	-- Required dependencies
+  -- Required dependencies
   "nvim-telescope/telescope.nvim",
   "nvim-lua/plenary.nvim",
   "trunk-io/neovim-trunk"
