@@ -79,12 +79,13 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'trunk-io/neovim-trunk', { 'tag': '*' }
 
 call plug#end()
+
+lua require'trunk'.setup({})
 ```
 
-3. Call `:PlugInstall` to install and `:PlugStatus` to verify
-4. Close and relaunch Neovim to start running Trunk
-
-_Note: Currently we do not support overriding configuration options using vim-plug._
+3. Add settings to the `setup` command as desired.
+4. Call `:PlugInstall` to install and `:PlugStatus` to verify
+5. Close and relaunch Neovim to start running Trunk
 
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 

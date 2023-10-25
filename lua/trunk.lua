@@ -21,6 +21,7 @@ end
 local errors = {}
 local failures = {}
 local notifications = {}
+local cliVersion = nil
 
 local logger = require("log")
 local math = require("math")
@@ -45,23 +46,27 @@ local function trim(s)
 end
 
 local function getCliVersion()
-	local cmd = executionTrunkPath()
-	table.insert(cmd, #cmd + 1, "version")
-	local output = vim.fn.systemlist(cmd)
-	local possibleVersion = trim(output[#output])
-	if pcall(function()
-		vim.version.parse(possibleVersion)
-	end) then
+	local possibleVersion = nil
+	if
+		pcall(function()
+			local cmd = executionTrunkPath()
+			table.insert(cmd, #cmd + 1, "version")
+			logger.info("cli version command", table.concat(cmd, " "))
+			local output = vim.fn.systemlist(cmd)
+			possibleVersion = trim(output[#output])
+			vim.version.parse(possibleVersion)
+		end)
+	then
 		return possibleVersion
 	else
 		-- version is not parsable
+		logger.warn("Received unparsable version string", possibleVersion)
 		return nil
 	end
 end
 
 local function checkCliVersion(requiredVersionString)
 	local version = vim.version
-	local cliVersion = getCliVersion()
 	if cliVersion == nil then
 		logger.info("nil CLI version")
 		return false
@@ -257,29 +262,30 @@ end
 
 -- Startup, including attaching autocmds
 local function start()
-	local cliVersion = getCliVersion()
+	cliVersion = getCliVersion()
 	logger.info("Running on CLI version:", cliVersion)
 	if cliVersion == nil then
 		logger.error("nil CLI version")
 		print(
-			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - we could not determine your Trunk CLI version"
+			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - we could not determine your Trunk CLI version."
 		)
-		print("The extension will not run until you upgrade your CLI version")
-		print("Please run `trunk upgrade cli` to upgrade your CLI version")
+		print("The extension will not run until you upgrade your CLI version.")
+		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
 		return
 	end
 	if not checkCliVersion("1.17.0") then
 		logger.error("Trunk CLI version must be >= 1.17.0")
-		print("The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion)
-		print("The extension will not run until you upgrade your CLI version")
-		print("Please run `trunk upgrade cli` to upgrade your CLI version")
+		print(
+			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion .. "."
+		)
+		print("The extension will not run until you upgrade your CLI version.")
+		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
 		return
 	end
-	if not checkCliVersion("1.17.2") then
+	if not checkCliVersion("1.17.2-beta.5") then
 		logger.warn("Trunk CLI version should be >= 1.17.2")
-		print("The Trunk Neovim extension prefers Trunk CLI version >= 1.17.2 - you currently have " .. cliVersion)
-		print("The extension will still run, but there are known bugs with bazel")
-		print("Please run `trunk upgrade cli` to upgrade your CLI version")
+		print("Detected stale Trunk CLI version " .. cliVersion .. ".")
+		print(" Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
 	end
 	logger.info("Setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
@@ -327,9 +333,9 @@ local function start()
 				local tmpFile = os.tmpname()
 				local tmpFormattedFile = os.tmpname()
 				local trunkFormatCmd = table.concat(executionTrunkPath(), " ") .. " format-stdin %:p"
-				if checkCliVersion("1.17.2") then
+				if checkCliVersion("1.17.2-beta.5") then
 					logger.info("using --output-file")
-					trunkFormatCmd = trunkFormatCmd .. " --output-file " .. tmpFormattedFile
+					trunkFormatCmd = trunkFormatCmd .. " --output-file=" .. tmpFormattedFile
 					if is_win() then
 						-- TODO: test on windows
 						-- These parens may need to be curly braces
@@ -397,7 +403,7 @@ end
 
 -- Setup config variables
 local function setup(opts)
-	logger.info("Performing setup")
+	logger.info("Performing setup", opts)
 	if not isempty(opts.logLevel) then
 		logger.log_level = opts.logLevel
 		logger.debug("Overrode loglevel with", opts.logLevel)
@@ -422,6 +428,8 @@ local function setup(opts)
 		logger.debug("Overrode formatOnSaveTimeout with", opts.formatOnSaveTimeout)
 		formatOnSave = opts.formatOnSaveTimeout
 	end
+
+	start()
 end
 
 -- Lua handles for plugin commands and setup
