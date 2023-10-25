@@ -125,9 +125,9 @@ end)
 ```lua
 require "paq" {
 	-- Required dependencies
-	"nvim-telescope/telescope.nvim",
-    "nvim-lua/plenary.nvim",
-	"trunk-io/neovim-trunk"
+  "nvim-telescope/telescope.nvim",
+  "nvim-lua/plenary.nvim",
+  "trunk-io/neovim-trunk"
 }
 
 if not pcall(function() require'trunk'.setup({}) end) then
