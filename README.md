@@ -50,7 +50,7 @@ require("lazy").setup({
 		"trunk-io/neovim-trunk",
 		lazy = false,
 		-- optionally pin the version
-		-- tag = "v0.1.0",
+		-- tag = "v0.1.1",
 		-- these are optional config arguments (defaults shown)
 		config = {
 			-- trunkPath = "trunk",
