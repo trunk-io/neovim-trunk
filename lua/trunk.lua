@@ -256,6 +256,32 @@ local function connect()
 					-- TODO(Tyler): Conditionally add a progress bar pane?
 				end,
 			},
+			-- custom callbacks for commands from code actions
+			commands = {
+				["trunk.checkEnable"] = function(command, _client_info, _command_str, _args)
+					-- TODO(Tyler): Use non-ANSI mode
+					vim.cmd(
+						"!"
+							.. table.concat(executionTrunkPath(), " ")
+							.. " check enable "
+							.. table.concat(command["arguments"])
+							.. [[ | sed -e 's/\x1b\[[0-9;]*m//g']]
+					)
+				end,
+				["trunk.checkDisable"] = function(command, _client_info, _command_str, _args)
+					-- TODO(Tyler): Use non-ANSI mode
+					vim.cmd(
+						"!"
+							.. table.concat(executionTrunkPath(), " ")
+							.. " check disable "
+							.. table.concat(command["arguments"])
+							.. [[ | sed -e 's/\x1b\[[0-9;]*m//g']]
+					)
+				end,
+				["trunk.openConfigFile"] = function(_command, _client_info, _command_str, _args)
+					vim.cmd(":edit " .. findConfig())
+				end,
+			},
 		})
 	end
 end

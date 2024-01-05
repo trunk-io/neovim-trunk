@@ -1,20 +1,20 @@
 version: 0.1
 cli:
-  version: 1.17.2-beta.5
+  version: 1.18.2-beta.14
   options:
     - commands: [upgrade]
       args: -y --no-progress
 plugins:
   sources:
     - id: trunk
-      ref: v1.2.5
+      ref: v1.4.1
       uri: https://github.com/trunk-io/plugins
     - id: configs
       uri: https://github.com/trunk-io/configs
-      ref: v0.0.7
+      ref: v1.0.1
 lint:
   enabled:
-    - stylua@0.18.2
+    - stylua@0.19.1
   ignore:
     - linters: [ALL]
       paths: [lsp*]
