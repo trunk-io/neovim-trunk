@@ -25,6 +25,18 @@ local function findWorkspace()
 	return vim.fs.dirname(vim.fs.find({ ".trunk", ".git" }, { upward = true })[1])
 end
 
+local function getOutFile()
+	local log_dir = findWorkspace() and findWorkspace() .. "/.trunk/logs"
+	if log_dir then
+		if vim.fn.isdirectory(log_dir) == 0 then
+			vim.fn.mkdir(log_dir, "p")
+		end
+		return log_dir .. "/neovim.log"
+	else
+		return os.tmpname()
+	end
+end
+
 -- User configuration section
 local default_config = {
 	-- Name of the plugin. Prepended to log messages
@@ -40,7 +52,7 @@ local default_config = {
 	use_file = true,
 
 	-- Default file to write
-	out_file = findWorkspace() and findWorkspace() .. "/.trunk/logs/neovim.log" or os.tmpname(),
+	out_file = getOutFile(),
 
 	-- Any messages above this level will be logged.
 	level = "info",
