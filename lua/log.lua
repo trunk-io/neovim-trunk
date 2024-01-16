@@ -27,10 +27,7 @@ end
 
 local function getOutFile()
 	local log_dir = findWorkspace() and findWorkspace() .. "/.trunk/logs"
-	if log_dir then
-		if vim.fn.isdirectory(log_dir) == 0 then
-			vim.fn.mkdir(log_dir, "p")
-		end
+	if log_dir and vim.fn.isdirectory(log_dir) ~= 0 then
 		return log_dir .. "/neovim.log"
 	else
 		return os.tmpname()
