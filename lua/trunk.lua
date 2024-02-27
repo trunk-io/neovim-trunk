@@ -303,7 +303,9 @@ local function start()
 		if not checkCliVersion("1.17.0") then
 			logger.error("Trunk CLI version must be >= 1.17.0")
 			print(
-				"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion .. "."
+				"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have "
+					.. cliVersion
+					.. "."
 			)
 			print("The extension will not run until you upgrade your CLI version.")
 			print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
