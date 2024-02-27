@@ -40,9 +40,9 @@ _Note: Some plugin managers offer varying capabilities for configuration and pin
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 1. Follow the [lazy.nvim install instructions](https://github.com/folke/lazy.nvim#-installation) to
-   modify your `lua/config.lua` file (on UNIX `~/.config/nvim/lua/config.lua`)
-2. Add the line `lua require("config")` to your `init.vim` file (on UNIX `~/.config/nvim/init.vim`)
-3. Add the following setup to your `lua/config.lua` file:
+   modify your `lua/init.lua` file (on UNIX `~/.config/nvim/lua/init.lua`)
+2. Add the line `lua require("init")` to your `init.vim` file (on UNIX `~/.config/nvim/init.vim`)
+3. Add the following setup to your `lua/init.lua` file:
 
 ```lua
 require("lazy").setup({
