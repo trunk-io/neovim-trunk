@@ -299,19 +299,21 @@ local function start()
 		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
 		return
 	end
-	if not checkCliVersion("1.17.0") then
-		logger.error("Trunk CLI version must be >= 1.17.0")
-		print(
-			"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion .. "."
-		)
-		print("The extension will not run until you upgrade your CLI version.")
-		print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
-		return
-	end
-	if not checkCliVersion("1.17.2-beta.5") then
-		logger.warn("Trunk CLI version should be >= 1.17.2")
-		print("Detected stale Trunk CLI version " .. cliVersion .. ".")
-		print(" Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+	if cliVersion ~= "0.0.0-rc" then
+		if not checkCliVersion("1.17.0") then
+			logger.error("Trunk CLI version must be >= 1.17.0")
+			print(
+				"The Trunk Neovim extension requires Trunk CLI version >= 1.17.0 - you currently have " .. cliVersion .. "."
+			)
+			print("The extension will not run until you upgrade your CLI version.")
+			print("Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+			return
+		end
+		if not checkCliVersion("1.17.2-beta.5") then
+			logger.warn("Trunk CLI version should be >= 1.17.2")
+			print("Detected stale Trunk CLI version " .. cliVersion .. ".")
+			print(" Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
+		end
 	end
 	logger.info("Setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
