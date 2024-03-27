@@ -343,86 +343,95 @@ local function start()
 		pattern = "*",
 		callback = function()
 			if formatOnSave then
-				-- TODO(Tyler): Get this working with vim.lsp.buf.format({ async = false })
 				logger.debug("Running fmt on save callback")
-				local cursor = vim.api.nvim_win_get_cursor(0)
-				local filename = vim.api.nvim_buf_get_name(0)
-				local workspace = findWorkspace()
-				if is_win() then
-					workspace = workspace:gsub("/", "\\")
-				end
-				-- if filename doesn't start with workspace
-				if workspace == nil or filename:sub(1, #workspace) ~= workspace then
-					return
-				end
 
-				local handle = io.popen("command -v timeout")
-				local timeoutResult = handle:read("*a")
-				handle:close()
-				-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
-				local tmpFile = os.tmpname()
-				local tmpFormattedFile = os.tmpname()
-				local trunkFormatCmd = table.concat(executionTrunkPath(), " ") .. " format-stdin %:p"
-				if checkCliVersion("1.17.2-beta.5") then
-					logger.info("using --output-file")
-					trunkFormatCmd = trunkFormatCmd .. " --output-file=" .. tmpFormattedFile
+				-- older LSP clients did not advertise documentFormattingProvider
+				if cliVersion == "0.0.0-rc" or checkCliVersion("1.21.1-beta.14") then
+					vim.lsp.buf.format({
+						async = false,
+						timeout_ms = formatOnSaveTimeout * 1000,
+						name = "neovim-trunk",
+					})
+				else
+					local cursor = vim.api.nvim_win_get_cursor(0)
+					local filename = vim.api.nvim_buf_get_name(0)
+					local workspace = findWorkspace()
 					if is_win() then
-						trunkFormatCmd = "(" .. trunkFormatCmd .. ") >$null"
-					else
-						trunkFormatCmd = trunkFormatCmd .. " 1>/dev/null 2>/dev/null"
+						workspace = workspace:gsub("/", "\\")
 					end
-				else
-					trunkFormatCmd = trunkFormatCmd .. " > " .. tmpFormattedFile
+					-- if filename doesn't start with workspace
+					if workspace == nil or filename:sub(1, #workspace) ~= workspace then
+						return
+					end
+
+					local handle = io.popen("command -v timeout")
+					local timeoutResult = handle:read("*a")
+					handle:close()
+					-- Stores current buffer in a temporary file in case trunk fmt fails so we don't overwrite the original buffer with an error message.
+					local tmpFile = os.tmpname()
+					local tmpFormattedFile = os.tmpname()
+					local trunkFormatCmd = table.concat(executionTrunkPath(), " ") .. " format-stdin %:p"
+					if checkCliVersion("1.17.2-beta.5") then
+						logger.info("using --output-file")
+						trunkFormatCmd = trunkFormatCmd .. " --output-file=" .. tmpFormattedFile
+						if is_win() then
+							trunkFormatCmd = "(" .. trunkFormatCmd .. ") >$null"
+						else
+							trunkFormatCmd = trunkFormatCmd .. " 1>/dev/null 2>/dev/null"
+						end
+					else
+						trunkFormatCmd = trunkFormatCmd .. " > " .. tmpFormattedFile
+					end
+					local formatCommand = ""
+					if is_win() then
+						logger.debug("Formatting on Windows")
+						-- TODO(Tyler): Handle carriage returns correctly here.
+						-- NOTE(Tyler): Powershell does not have && and || so we must use cmd /c
+						formatCommand = (
+							':% ! cmd /c "tee '
+							.. tmpFile
+							.. " | "
+							.. trunkFormatCmd
+							.. " && cat "
+							.. tmpFormattedFile
+							.. " || cat "
+							.. tmpFile
+							.. '"'
+						)
+					elseif timeoutResult:len() == 0 then
+						logger.debug("Formatting without timeout")
+						formatCommand = (
+							":% !tee "
+							.. tmpFile
+							.. " | "
+							.. trunkFormatCmd
+							.. " && cat "
+							.. tmpFormattedFile
+							.. " || cat "
+							.. tmpFile
+						)
+					else
+						logger.debug("Formatting with timeout")
+						formatCommand = (
+							":% !tee "
+							.. tmpFile
+							.. " | timeout "
+							.. formatOnSaveTimeout
+							.. " "
+							.. trunkFormatCmd
+							.. " && cat "
+							.. tmpFormattedFile
+							.. " || cat "
+							.. tmpFile
+						)
+					end
+					logger.debug("Format command: " .. formatCommand)
+					vim.cmd(formatCommand)
+					local line_count = vim.api.nvim_buf_line_count(0)
+					os.remove(tmpFile)
+					os.remove(tmpFormattedFile)
+					vim.api.nvim_win_set_cursor(0, { math.min(cursor[1], line_count), cursor[2] })
 				end
-				local formatCommand = ""
-				if is_win() then
-					logger.debug("Formatting on Windows")
-					-- TODO(Tyler): Handle carriage returns correctly here.
-					-- NOTE(Tyler): Powershell does not have && and || so we must use cmd /c
-					formatCommand = (
-						':% ! cmd /c "tee '
-						.. tmpFile
-						.. " | "
-						.. trunkFormatCmd
-						.. " && cat "
-						.. tmpFormattedFile
-						.. " || cat "
-						.. tmpFile
-						.. '"'
-					)
-				elseif timeoutResult:len() == 0 then
-					logger.debug("Formatting without timeout")
-					formatCommand = (
-						":% !tee "
-						.. tmpFile
-						.. " | "
-						.. trunkFormatCmd
-						.. " && cat "
-						.. tmpFormattedFile
-						.. " || cat "
-						.. tmpFile
-					)
-				else
-					logger.debug("Formatting with timeout")
-					formatCommand = (
-						":% !tee "
-						.. tmpFile
-						.. " | timeout "
-						.. formatOnSaveTimeout
-						.. " "
-						.. trunkFormatCmd
-						.. " && cat "
-						.. tmpFormattedFile
-						.. " || cat "
-						.. tmpFile
-					)
-				end
-				logger.debug("Format command: " .. formatCommand)
-				vim.cmd(formatCommand)
-				local line_count = vim.api.nvim_buf_line_count(0)
-				os.remove(tmpFile)
-				os.remove(tmpFormattedFile)
-				vim.api.nvim_win_set_cursor(0, { math.min(cursor[1], line_count), cursor[2] })
 			end
 		end,
 	})
