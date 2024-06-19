@@ -42,14 +42,9 @@ Use [demo_data](demo_data) as a sandbox for testing the plugin.
 
 Neovim plugins are setup as follows:
 
-- The `plugin` directory at the root of the repo contains a [vimscript file](plugin/trunk.vim)
-  responsible for:
-  - Starting any background processes (in this case, the Trunk LSP server)
-  - Defining any commands accessible from Neovim
-  - And marking the plugin as finished loading
 - A `lua` directory containing any lua files for core functionality. Our `lua` directory contains:
-  - [trunk.lua](lua/trunk.lua), which defines global state for the lifetime of the plugin, provides
-    functionality for each of the vimscript commands, and launches the Trunk LSP server.
+  - [trunk.lua](lua/trunk.lua), which defines global state for the lifetime of the plugin, defines
+    commands, and launches the Trunk LSP server.
   - [log.lua](lua/log.lua), which manages logging, which is written to `.trunk/logs/neovim.log` and
     is flushed periodically. When run from outside of a Trunk repo, this log is written to a
     tempfile.

@@ -317,6 +317,24 @@ local function start()
 			print(" Please run `trunk upgrade` to get the latest improvements and fixes for Neovim.")
 		end
 	end
+
+	logger.info("Setting up commands")
+	vim.api.nvim_create_user_command("TrunkConfig", function()
+		require("trunk").openConfig()
+	end, {})
+	vim.api.nvim_create_user_command("TrunkStatus", function()
+		require("trunk").printStatus()
+	end, {})
+	vim.api.nvim_create_user_command("TrunkActions", function()
+		require("trunk").actions()
+	end, {})
+	vim.api.nvim_create_user_command("TrunkQuery", function()
+		require("trunk").checkQuery()
+	end, {})
+	vim.api.nvim_create_user_command("TrunkLogs", function()
+		require("trunk").openLogs()
+	end, {})
+
 	logger.info("Setting up autocmds")
 	local autocmd = vim.api.nvim_create_autocmd
 	autocmd("FileType", {
@@ -478,6 +496,10 @@ local function openLogs()
 	end
 
 	vim.cmd(":e " .. out_file)
+end
+
+local function openConfig()
+	vim.api.nvim_win_set_buf(0, vim.fn.bufadd(findConfig()))
 end
 
 -- Lua handles for plugin commands and setup
