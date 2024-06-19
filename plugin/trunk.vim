@@ -20,6 +20,8 @@ command! TrunkActions lua require'trunk'.actions()
 " command to list all applicable linters for a file
 command! TrunkQuery lua require'trunk'.checkQuery()
 
+" command to list all applicable linters for a file
+command! TrunkLogs lua require'trunk'.openLogs()
 
 let &cpo = s:save_cpo " and restore after
 unlet s:save_cpo
