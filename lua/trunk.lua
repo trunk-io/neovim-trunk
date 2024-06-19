@@ -468,6 +468,18 @@ local function setup(opts)
 	start()
 end
 
+local function openLogs()
+	local out_file = require("log").path
+	-- make sure this file exists
+	if not vim.fn.filereadable(out_file) then
+		logger.error("Log file does not exist")
+		print("We cannot open logs because of an internal error. The log module is somehow busted")
+		return
+	end
+
+	vim.cmd(":e " .. out_file)
+end
+
 -- Lua handles for plugin commands and setup
 return {
 	start = start,
@@ -476,4 +488,5 @@ return {
 	printStatus = printFailures,
 	actions = printActionNotifications,
 	checkQuery = checkQuery,
+	openLogs = openLogs,
 }

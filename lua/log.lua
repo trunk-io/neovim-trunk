@@ -182,6 +182,7 @@ log.new = function(config, standalone)
 end
 
 log.new(default_config, true)
+log["path"] = default_config.out_file
 -- }}}
 
 return log
