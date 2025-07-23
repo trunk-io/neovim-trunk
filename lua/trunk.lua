@@ -322,6 +322,10 @@ local function start()
 	autocmd("FileType", {
 		pattern = "*",
 		callback = function()
+			local bt = vim.bo.buftype
+			if bt ~= "" then -- ignore every non‑normal buffer
+				return
+			end
 			local bufname = vim.api.nvim_buf_get_name(0)
 			logger.debug("Buffer filename: " .. bufname)
 			local fs = vim.fs
